@@ -91,9 +91,26 @@ function fillDemo(scenario) {
 }
 
 // Pré-remplir les dates par défaut
-document.addEventListener("DOMContentLoaded", () => {
+// true si ANTHROPIC_API_KEY est configurée côté serveur Vercel
+let serverKeyConfigured = false;
+
+document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("date_declaration").value = daysAgo(5);
   document.getElementById("date_souscription").value = daysAgo(400);
+
+  try {
+    const res = await fetch("/api/check");
+    if (res.ok) {
+      const { configured } = await res.json();
+      if (configured) {
+        serverKeyConfigured = true;
+        document.getElementById("apiKeySection").classList.add("hidden");
+        document.getElementById("apiKeyConfigured").classList.remove("hidden");
+      }
+    }
+  } catch (_) {
+    // /api/check indisponible (dev local sans serverless) — on garde le champ
+  }
 });
 
 // ── Utilitaires ─────────────────────────────────────────────────────────────
@@ -385,8 +402,11 @@ function showError(msg) {
 document.getElementById("sinistreForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const apiKey = document.getElementById("apiKey").value.trim();
-  if (!apiKey || !apiKey.startsWith("sk-ant-")) {
+  const apiKey = serverKeyConfigured
+    ? ""
+    : document.getElementById("apiKey").value.trim();
+
+  if (!serverKeyConfigured && (!apiKey || !apiKey.startsWith("sk-ant-"))) {
     alert("Veuillez saisir une clé Anthropic API valide (sk-ant-…)");
     return;
   }

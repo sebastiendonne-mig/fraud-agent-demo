@@ -650,10 +650,14 @@
   </p>
 
   <!-- API Key -->
-  <div class="api-key-section">
+  <div class="api-key-section" id="apiKeySection">
     <label>🔑 Clé Anthropic API</label>
     <input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off" />
     <span class="api-key-notice">🔒 Stockée uniquement en mémoire — jamais envoyée ailleurs</span>
+  </div>
+  <div class="api-key-section hidden" id="apiKeyConfigured" style="background:var(--green-light);border-color:#9fd89f;">
+    <span style="font-size:16px">✅</span>
+    <span style="font-size:13px;font-weight:600;color:var(--green);">Clé API configurée côté serveur — prêt à analyser</span>
   </div>
 
   <!-- Pipeline stepper -->
