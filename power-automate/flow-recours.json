@@ -1,0 +1,725 @@
+{
+  "$schema": "https://schema.management.azure.com/providers/Microsoft.Flow/schemas/2016-06-01/Microsoft.Flow.json#",
+  "contentVersion": "1.0.0.0",
+  "name": "flow-recours-subrogation",
+  "properties": {
+    "displayName": "Agent 5 — Génération dossier recours & email juridique",
+    "description": "Flow déclenché par la détection d'un recours viable par l'Agent 4 (Azure OpenAI). Génère automatiquement le dossier de subrogation dans Dataverse et envoie l'email au service juridique.",
+    "state": "Enabled",
+    "createdTime": "2026-06-04T00:00:00Z",
+    "lastModifiedTime": "2026-06-04T00:00:00Z",
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "connectionName": "shared-commondataservicef-REMPLACER",
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+        "displayName": "Microsoft Dataverse",
+        "brandColor": "#637cef"
+      },
+      "shared_office365": {
+        "connectionName": "shared-office365-REMPLACER",
+        "source": "Embedded",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_office365",
+        "displayName": "Office 365 Outlook",
+        "brandColor": "#0078d4"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "env_dataverse_org_url": {
+          "defaultValue": "https://orgXXXXXXXX.crm.dynamics.com",
+          "type": "String",
+          "metadata": {
+            "description": "URL de l'organisation Dataverse — à remplacer par l'URL de votre environnement Power Platform"
+          }
+        },
+        "env_aoai_endpoint": {
+          "defaultValue": "https://aoai-fraude-demo.openai.azure.com",
+          "type": "String",
+          "metadata": {
+            "description": "Endpoint Azure OpenAI — la clé est récupérée depuis Key Vault via Managed Identity"
+          }
+        },
+        "env_keyvault_name": {
+          "defaultValue": "kv-fraude-agent-demo",
+          "type": "String",
+          "metadata": {
+            "description": "Nom du Key Vault Azure contenant les secrets du pipeline"
+          }
+        },
+        "env_seuil_montant_recours": {
+          "defaultValue": 500,
+          "type": "Int",
+          "metadata": {
+            "description": "Seuil minimal en € en dessous duquel le recours n'est pas initié (frais > bénéfice)"
+          }
+        },
+        "env_email_juridique": {
+          "defaultValue": "recours@assureur-demo.fr",
+          "type": "String",
+          "metadata": {
+            "description": "Adresse email du service juridique — destinataire principal de l'email de recours"
+          }
+        },
+        "env_email_siu": {
+          "defaultValue": "siu@assureur-demo.fr",
+          "type": "String",
+          "metadata": {
+            "description": "Adresse email de l'unité SIU — mise en copie systématique"
+          }
+        }
+      },
+      "triggers": {
+        "Dataverse_Sinistre_Recours_Détecté": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger"
+            },
+            "parameters": {
+              "subscriptionRequest/message": 3,
+              "subscriptionRequest/entityname": "cr_sinistres",
+              "subscriptionRequest/scope": 4,
+              "subscriptionRequest/filterexpression": "cr_recours_possible eq true and cr_statut eq 'analyse_complete'"
+            }
+          },
+          "metadata": {
+            "displayName": "Quand un sinistre passe à analyse_complete avec recours_possible=true"
+          }
+        }
+      },
+      "actions": {
+        "Init_varRefRecours": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varRefRecours",
+                "type": "string",
+                "value": ""
+              }
+            ]
+          },
+          "runAfter": {},
+          "metadata": {
+            "displayName": "Init — Référence recours (ex: REC-2026-A3F9B2)"
+          }
+        },
+        "Init_varMontantRecuperable": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varMontantRecuperable",
+                "type": "float",
+                "value": 0
+              }
+            ]
+          },
+          "runAfter": {
+            "Init_varRefRecours": ["Succeeded"]
+          },
+          "metadata": {
+            "displayName": "Init — Montant récupérable en €"
+          }
+        },
+        "Init_varStatutFinal": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varStatutFinal",
+                "type": "string",
+                "value": "en_traitement"
+              }
+            ]
+          },
+          "runAfter": {
+            "Init_varMontantRecuperable": ["Succeeded"]
+          },
+          "metadata": {
+            "displayName": "Init — Statut final du traitement Agent 5"
+          }
+        },
+        "Scope_Chargement_Données": {
+          "type": "Scope",
+          "actions": {
+            "Dataverse_Get_Sinistre": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "GetItem"
+                },
+                "parameters": {
+                  "entityName": "cr_sinistres",
+                  "recordId": "@triggerOutputs()?['body/cr_id_sinistre']"
+                }
+              },
+              "runAfter": {},
+              "metadata": {
+                "displayName": "Dataverse — Récupérer le sinistre complet"
+              }
+            },
+            "Dataverse_Get_Police": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "GetItem"
+                },
+                "parameters": {
+                  "entityName": "cr_polices",
+                  "recordId": "@outputs('Dataverse_Get_Sinistre')?['body/cr_id_police']"
+                }
+              },
+              "runAfter": {
+                "Dataverse_Get_Sinistre": ["Succeeded"]
+              },
+              "metadata": {
+                "displayName": "Dataverse — Récupérer la police associée"
+              }
+            },
+            "Parse_Analyse_Rapport": {
+              "type": "ParseJson",
+              "inputs": {
+                "content": "@outputs('Dataverse_Get_Sinistre')?['body/cr_analyse_rapport_json']",
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reference_rapport": { "type": ["string", "null"] },
+                    "date_accident": { "type": ["string", "null"] },
+                    "lieu_accident": { "type": ["string", "null"] },
+                    "parties_responsables": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "nom": { "type": ["string", "null"] },
+                          "immatriculation": { "type": ["string", "null"] },
+                          "part_responsabilite_pct": { "type": "number" },
+                          "motif_responsabilite": { "type": "string" }
+                        }
+                      }
+                    },
+                    "partie_non_responsable": {
+                      "type": "object",
+                      "properties": {
+                        "nom": { "type": ["string", "null"] },
+                        "immatriculation": { "type": ["string", "null"] },
+                        "role": { "type": "string" }
+                      }
+                    },
+                    "elements_cles_recours": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "blesses": {
+                      "type": "object",
+                      "properties": {
+                        "present": { "type": "boolean" },
+                        "description": { "type": ["string", "null"] }
+                      }
+                    },
+                    "temoins": {
+                      "type": "object",
+                      "properties": {
+                        "present": { "type": "boolean" },
+                        "nombre": { "type": ["number", "null"] },
+                        "confirment_version_assure": { "type": ["boolean", "null"] }
+                      }
+                    },
+                    "recours_possible": { "type": "boolean" },
+                    "niveau_certitude": { "type": "string" },
+                    "notes_analyste": { "type": ["string", "null"] }
+                  }
+                }
+              },
+              "runAfter": {
+                "Dataverse_Get_Police": ["Succeeded"]
+              },
+              "metadata": {
+                "displayName": "Parser — Analyse rapport de police (Agent 4 output)"
+              }
+            },
+            "Parse_Identification_Tiers": {
+              "type": "ParseJson",
+              "inputs": {
+                "content": "@outputs('Dataverse_Get_Sinistre')?['body/cr_identification_tiers_json']",
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id_sinistre": { "type": "string" },
+                    "reference_rapport": { "type": ["string", "null"] },
+                    "tiers_identifie": {
+                      "type": "object",
+                      "properties": {
+                        "nom": { "type": ["string", "null"] },
+                        "immatriculation": { "type": ["string", "null"] },
+                        "assurance_tiers_connue": { "type": ["string", "null"] },
+                        "coordonnees_disponibles": { "type": "boolean" }
+                      }
+                    },
+                    "recours_viable": { "type": "boolean" },
+                    "motif_non_viabilite": { "type": ["string", "null"] },
+                    "fondement_juridique": {
+                      "type": "object",
+                      "properties": {
+                        "type": { "type": "string" },
+                        "reference_legale": { "type": ["string", "null"] },
+                        "commentaire": { "type": ["string", "null"] }
+                      }
+                    },
+                    "montant_reclame_assure": { "type": "number" },
+                    "part_responsabilite_tiers_pct": { "type": "number" },
+                    "montant_estimé_récuperable": { "type": "number" },
+                    "franchise_deductible": { "type": ["number", "null"] },
+                    "priorite_recours": { "type": "string" },
+                    "actions_prioritaires": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "delai_jours": { "type": "number" },
+                          "action": { "type": "string" },
+                          "responsable": { "type": "string" }
+                        }
+                      }
+                    },
+                    "niveau_certitude_global": { "type": "string" },
+                    "observations": { "type": ["string", "null"] }
+                  }
+                }
+              },
+              "runAfter": {
+                "Parse_Analyse_Rapport": ["Succeeded"]
+              },
+              "metadata": {
+                "displayName": "Parser — Identification tiers & recours (Agent 4 output)"
+              }
+            }
+          },
+          "runAfter": {
+            "Init_varStatutFinal": ["Succeeded"]
+          },
+          "metadata": {
+            "displayName": "Scope — Chargement des données dossier depuis Dataverse"
+          }
+        },
+        "Condition_Recours_Viable": {
+          "type": "If",
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@body('Parse_Identification_Tiers')?['recours_viable']",
+                  true
+                ]
+              },
+              {
+                "greaterOrEquals": [
+                  "@body('Parse_Identification_Tiers')?['montant_estimé_récuperable']",
+                  "@parameters('env_seuil_montant_recours')"
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "Set_varRefRecours": {
+              "type": "SetVariable",
+              "inputs": {
+                "name": "varRefRecours",
+                "value": "@concat('REC-', formatDateTime(utcNow(), 'yyyy'), '-', toUpper(substring(guid(), 0, 6)))"
+              },
+              "runAfter": {},
+              "metadata": {
+                "displayName": "Set — Générer référence recours unique (REC-YYYY-XXXXXX)"
+              }
+            },
+            "Set_varMontantRecuperable": {
+              "type": "SetVariable",
+              "inputs": {
+                "name": "varMontantRecuperable",
+                "value": "@body('Parse_Identification_Tiers')?['montant_estimé_récuperable']"
+              },
+              "runAfter": {
+                "Set_varRefRecours": ["Succeeded"]
+              },
+              "metadata": {
+                "displayName": "Set — Montant récupérable depuis JSON Agent 4"
+              }
+            },
+            "KeyVault_Get_AOAI_Key": {
+              "type": "Http",
+              "inputs": {
+                "method": "GET",
+                "uri": "@concat('https://', parameters('env_keyvault_name'), '.vault.azure.net/secrets/aoai-api-key/?api-version=7.4')",
+                "authentication": {
+                  "type": "ManagedServiceIdentity",
+                  "audience": "https://vault.azure.net"
+                }
+              },
+              "runAfter": {
+                "Set_varMontantRecuperable": ["Succeeded"]
+              },
+              "metadata": {
+                "displayName": "Key Vault — Récupérer clé Azure OpenAI (Managed Identity)"
+              }
+            },
+            "Scope_Génération_Dossier": {
+              "type": "Scope",
+              "actions": {
+                "HTTP_AOAI_Rédiger_Lettre": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "@concat(parameters('env_aoai_endpoint'), '/openai/deployments/gpt-4o/chat/completions?api-version=2024-02-01')",
+                    "headers": {
+                      "Content-Type": "application/json",
+                      "api-key": "@body('KeyVault_Get_AOAI_Key')?['value']"
+                    },
+                    "body": {
+                      "model": "gpt-4o",
+                      "temperature": 0.2,
+                      "max_tokens": 1500,
+                      "messages": [
+                        {
+                          "role": "system",
+                          "content": "Tu es un rédacteur juridique spécialisé en droit des assurances français. Rédige une lettre de mise en demeure de recours en subrogation, formelle et professionnelle, en français. La lettre est adressée à l'assureur du tiers responsable (ou directement au tiers si assureur inconnu). Elle doit inclure : la référence du sinistre et du recours, les faits établis par le procès-verbal de police, le fondement juridique (art. L121-12 du Code des assurances), le montant précis réclamé, et une demande de remboursement dans un délai de 30 jours. Signe au nom du service juridique de la compagnie d'assurance. Ne jamais inventer de faits non fournis. Réponds uniquement avec le texte de la lettre, sans JSON ni balise."
+                        },
+                        {
+                          "role": "user",
+                          "content": "@concat('Rédige la lettre de recours en subrogation pour le dossier suivant :\n\nRéférence recours : ', variables('varRefRecours'), '\nRéférence sinistre : ', outputs('Dataverse_Get_Sinistre')?['body/cr_id_sinistre'], '\nRéférence police : ', outputs('Dataverse_Get_Sinistre')?['body/cr_id_police'], '\nType de sinistre : ', outputs('Dataverse_Get_Sinistre')?['body/cr_type'], '\nDate accident : ', body('Parse_Analyse_Rapport')?['date_accident'], '\nLieu de l accident : ', body('Parse_Analyse_Rapport')?['lieu_accident'], '\n\nTiers responsable :\n  Nom : ', body('Parse_Identification_Tiers')?['tiers_identifie/nom'], '\n  Immatriculation : ', body('Parse_Identification_Tiers')?['tiers_identifie/immatriculation'], '\n  Assurance tiers : ', if(equals(body('Parse_Identification_Tiers')?['tiers_identifie/assurance_tiers_connue'], null), 'Inconnue — à identifier via fichier AGIRA', body('Parse_Identification_Tiers')?['tiers_identifie/assurance_tiers_connue']), '\n\nResponsabilité tiers établie : ', string(body('Parse_Identification_Tiers')?['part_responsabilite_tiers_pct']), '%\nMontant indemnisé à notre assuré : ', string(outputs('Dataverse_Get_Sinistre')?['body/cr_montant_reclame']), ' euros\nMontant réclamé en recours : ', string(variables('varMontantRecuperable')), ' euros\n\nFondement juridique : ', body('Parse_Identification_Tiers')?['fondement_juridique/reference_legale'], '\nCommentaire : ', body('Parse_Identification_Tiers')?['fondement_juridique/commentaire'], '\n\nÉléments factuels établis par procès-verbal de police :\n', join(body('Parse_Analyse_Rapport')?['elements_cles_recours'], '\n- '))"
+                        }
+                      ]
+                    }
+                  },
+                  "runAfter": {},
+                  "metadata": {
+                    "displayName": "Azure OpenAI GPT-4o — Rédiger lettre de recours"
+                  }
+                },
+                "Parse_Réponse_AOAI": {
+                  "type": "ParseJson",
+                  "inputs": {
+                    "content": "@body('HTTP_AOAI_Rédiger_Lettre')",
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "choices": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "type": "object",
+                                "properties": {
+                                  "content": { "type": "string" }
+                                }
+                              },
+                              "finish_reason": { "type": "string" }
+                            }
+                          }
+                        },
+                        "usage": {
+                          "type": "object",
+                          "properties": {
+                            "prompt_tokens": { "type": "number" },
+                            "completion_tokens": { "type": "number" },
+                            "total_tokens": { "type": "number" }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "HTTP_AOAI_Rédiger_Lettre": ["Succeeded"]
+                  },
+                  "metadata": {
+                    "displayName": "Parser — Réponse Azure OpenAI"
+                  }
+                },
+                "Compose_Texte_Lettre": {
+                  "type": "Compose",
+                  "inputs": "@body('Parse_Réponse_AOAI')?['choices'][0]?['message']?['content']",
+                  "runAfter": {
+                    "Parse_Réponse_AOAI": ["Succeeded"]
+                  },
+                  "metadata": {
+                    "displayName": "Compose — Extraire texte lettre finale"
+                  }
+                },
+                "Compose_Corps_Email_HTML": {
+                  "type": "Compose",
+                  "inputs": "@concat(\n'<html><body style=\"font-family:Calibri,Arial,sans-serif;color:#1a1a1a;margin:0;padding:0;\">',\n'<div style=\"background:#0078d4;color:white;padding:24px 32px;\">',\n'<h2 style=\"margin:0;font-size:20px;\">Dossier de Recours en Subrogation</h2>',\n'<p style=\"margin:6px 0 0;opacity:0.85;font-size:13px;\">Généré automatiquement — Agent 5 Power Automate | ', formatDateTime(utcNow(), 'dd/MM/yyyy à HH:mm'), ' UTC</p>',\n'</div>',\n'<div style=\"padding:24px 32px;\">',\n'<h3 style=\"color:#0078d4;border-bottom:2px solid #0078d4;padding-bottom:8px;margin-top:0;\">Récapitulatif du dossier</h3>',\n'<table style=\"width:100%;border-collapse:collapse;font-size:14px;margin-bottom:28px;\">',\n'<tr style=\"background:#f3f6fb;\"><td style=\"padding:10px 14px;font-weight:600;width:200px;color:#444;\">Référence recours</td><td style=\"padding:10px 14px;\"><strong style=\"color:#0078d4;\">', variables('varRefRecours'), '</strong></td></tr>',\n'<tr><td style=\"padding:10px 14px;font-weight:600;color:#444;\">Sinistre</td><td style=\"padding:10px 14px;\">', outputs('Dataverse_Get_Sinistre')?['body/cr_id_sinistre'], '</td></tr>',\n'<tr style=\"background:#f3f6fb;\"><td style=\"padding:10px 14px;font-weight:600;color:#444;\">Police</td><td style=\"padding:10px 14px;\">', outputs('Dataverse_Get_Sinistre')?['body/cr_id_police'], '</td></tr>',\n'<tr><td style=\"padding:10px 14px;font-weight:600;color:#444;\">Type de sinistre</td><td style=\"padding:10px 14px;\">', outputs('Dataverse_Get_Sinistre')?['body/cr_type'], '</td></tr>',\n'<tr style=\"background:#f3f6fb;\"><td style=\"padding:10px 14px;font-weight:600;color:#444;\">Date accident</td><td style=\"padding:10px 14px;\">', body('Parse_Analyse_Rapport')?['date_accident'], '</td></tr>',\n'<tr><td style=\"padding:10px 14px;font-weight:600;color:#444;\">Lieu</td><td style=\"padding:10px 14px;\">', body('Parse_Analyse_Rapport')?['lieu_accident'], '</td></tr>',\n'<tr style=\"background:#f3f6fb;\"><td style=\"padding:10px 14px;font-weight:600;color:#444;\">Tiers responsable</td><td style=\"padding:10px 14px;\"><strong>', body('Parse_Identification_Tiers')?['tiers_identifie/nom'], '</strong> — ', body('Parse_Identification_Tiers')?['tiers_identifie/immatriculation'], '</td></tr>',\n'<tr><td style=\"padding:10px 14px;font-weight:600;color:#444;\">Responsabilité tiers</td><td style=\"padding:10px 14px;\"><strong style=\"font-size:15px;\">', string(body('Parse_Identification_Tiers')?['part_responsabilite_tiers_pct']), '%</strong></td></tr>',\n'<tr style=\"background:#f3f6fb;\"><td style=\"padding:10px 14px;font-weight:600;color:#444;\">Montant réclamé assuré</td><td style=\"padding:10px 14px;\">', string(outputs('Dataverse_Get_Sinistre')?['body/cr_montant_reclame']), ' €</td></tr>',\n'<tr><td style=\"padding:10px 14px;font-weight:600;color:#444;\">Montant récupérable estimé</td><td style=\"padding:10px 14px;\"><strong style=\"color:#107c10;font-size:16px;\">', string(variables('varMontantRecuperable')), ' €</strong></td></tr>',\n'<tr style=\"background:#f3f6fb;\"><td style=\"padding:10px 14px;font-weight:600;color:#444;\">Fondement juridique</td><td style=\"padding:10px 14px;\">', body('Parse_Identification_Tiers')?['fondement_juridique/reference_legale'], '</td></tr>',\n'<tr><td style=\"padding:10px 14px;font-weight:600;color:#444;\">Priorité recours</td><td style=\"padding:10px 14px;\"><span style=\"background:', if(equals(body('Parse_Identification_Tiers')?['priorite_recours'], 'Urgente'), '#d13438', if(equals(body('Parse_Identification_Tiers')?['priorite_recours'], 'Normale'), '#f7630c', '#767676')), ';color:white;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;\">', body('Parse_Identification_Tiers')?['priorite_recours'], '</span></td></tr>',\n'<tr style=\"background:#f3f6fb;\"><td style=\"padding:10px 14px;font-weight:600;color:#444;\">Certitude analyse</td><td style=\"padding:10px 14px;\">', body('Parse_Identification_Tiers')?['niveau_certitude_global'], '</td></tr>',\n'<tr><td style=\"padding:10px 14px;font-weight:600;color:#444;\">Date prescription</td><td style=\"padding:10px 14px;\">', formatDateTime(addToTime(body('Parse_Analyse_Rapport')?['date_accident'], 2, 'Year'), 'dd/MM/yyyy'), ' (2 ans — art. L114-1 C.ass.)</td></tr>',\n'</table>',\n'<h3 style=\"color:#0078d4;border-bottom:2px solid #0078d4;padding-bottom:8px;\">Lettre de recours générée par Azure OpenAI GPT-4o</h3>',\n'<div style=\"background:#f8f9fa;border-left:4px solid #0078d4;padding:20px 24px;font-family:Georgia,Times,serif;line-height:1.7;white-space:pre-wrap;font-size:14px;border-radius:0 4px 4px 0;\">',\noutputs('Compose_Texte_Lettre'),\n'</div>',\n'<h3 style=\"color:#0078d4;border-bottom:2px solid #0078d4;padding-bottom:8px;margin-top:32px;\">Actions prioritaires</h3>',\n'<table style=\"width:100%;border-collapse:collapse;font-size:13px;\">',\n'<tr style=\"background:#0078d4;color:white;\"><th style=\"padding:10px 14px;text-align:left;\">Délai</th><th style=\"padding:10px 14px;text-align:left;\">Action</th><th style=\"padding:10px 14px;text-align:left;\">Responsable</th></tr>',\njoin(body('Parse_Identification_Tiers')?['actions_prioritaires'], ''),\n'</table>',\n'<div style=\"background:#fff4ce;border:1px solid #f9d71c;border-radius:4px;padding:12px 16px;margin-top:24px;font-size:13px;\">',\n'<strong>Observations :</strong> ', if(equals(body('Parse_Identification_Tiers')?['observations'], null), 'Aucune observation complémentaire.', body('Parse_Identification_Tiers')?['observations']),\n'</div>',\n'<hr style=\"margin:28px 0;border:none;border-top:1px solid #e0e0e0;\">',\n'<p style=\"color:#888;font-size:11px;line-height:1.6;\">',\n'Ce dossier a été généré automatiquement par le pipeline Agent Détecteur de Fraude &amp; Recours.<br>',\n'Réf. recours : <strong>', variables('varRefRecours'), '</strong> | Sinistre : ', outputs('Dataverse_Get_Sinistre')?['body/cr_id_sinistre'], ' | Traitement : ', formatDateTime(utcNow(), 'dd/MM/yyyy HH:mm'), ' UTC<br>',\n'Ce message est confidentiel et destiné exclusivement au service juridique et à l\\'unité SIU.',\n'</p>',\n'</div></body></html>'\n)",
+                  "runAfter": {
+                    "Compose_Texte_Lettre": ["Succeeded"]
+                  },
+                  "metadata": {
+                    "displayName": "Compose — Corps email HTML enrichi"
+                  }
+                }
+              },
+              "runAfter": {
+                "KeyVault_Get_AOAI_Key": ["Succeeded"]
+              },
+              "metadata": {
+                "displayName": "Scope — Génération lettre recours via Azure OpenAI"
+              }
+            },
+            "Dataverse_Créer_Dossier_Recours": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "CreateItem"
+                },
+                "parameters": {
+                  "entityName": "cr_dossiers_recours",
+                  "item/cr_ref_recours": "@variables('varRefRecours')",
+                  "item/cr_id_sinistre": "@outputs('Dataverse_Get_Sinistre')?['body/cr_id_sinistre']",
+                  "item/cr_id_police": "@outputs('Dataverse_Get_Sinistre')?['body/cr_id_police']",
+                  "item/cr_id_assure": "@outputs('Dataverse_Get_Sinistre')?['body/cr_id_assure']",
+                  "item/cr_tiers_nom": "@body('Parse_Identification_Tiers')?['tiers_identifie/nom']",
+                  "item/cr_tiers_immatriculation": "@body('Parse_Identification_Tiers')?['tiers_identifie/immatriculation']",
+                  "item/cr_tiers_assurance_connue": "@body('Parse_Identification_Tiers')?['tiers_identifie/assurance_tiers_connue']",
+                  "item/cr_montant_reclame": "@outputs('Dataverse_Get_Sinistre')?['body/cr_montant_reclame']",
+                  "item/cr_montant_recuperable": "@variables('varMontantRecuperable')",
+                  "item/cr_part_responsabilite_pct": "@body('Parse_Identification_Tiers')?['part_responsabilite_tiers_pct']",
+                  "item/cr_fondement_type": "@body('Parse_Identification_Tiers')?['fondement_juridique/type']",
+                  "item/cr_fondement_reference": "@body('Parse_Identification_Tiers')?['fondement_juridique/reference_legale']",
+                  "item/cr_fondement_commentaire": "@body('Parse_Identification_Tiers')?['fondement_juridique/commentaire']",
+                  "item/cr_priorite": "@body('Parse_Identification_Tiers')?['priorite_recours']",
+                  "item/cr_certitude_analyse": "@body('Parse_Identification_Tiers')?['niveau_certitude_global']",
+                  "item/cr_lettre_recours": "@outputs('Compose_Texte_Lettre')",
+                  "item/cr_actions_json": "@string(body('Parse_Identification_Tiers')?['actions_prioritaires'])",
+                  "item/cr_observations": "@body('Parse_Identification_Tiers')?['observations']",
+                  "item/cr_statut": "initie",
+                  "item/cr_date_creation": "@utcNow()",
+                  "item/cr_date_echeance_prescription": "@addToTime(body('Parse_Analyse_Rapport')?['date_accident'], 2, 'Year')",
+                  "item/cr_franchise_assure": "@outputs('Dataverse_Get_Police')?['body/cr_franchise']",
+                  "item/cr_tokens_aoai": "@body('Parse_Réponse_AOAI')?['usage/total_tokens']"
+                }
+              },
+              "runAfter": {
+                "Scope_Génération_Dossier": ["Succeeded"]
+              },
+              "metadata": {
+                "displayName": "Dataverse — Créer enregistrement dans cr_dossiers_recours"
+              }
+            },
+            "Dataverse_Màj_Sinistre_Recours_Initié": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "UpdateItem"
+                },
+                "parameters": {
+                  "entityName": "cr_sinistres",
+                  "recordId": "@triggerOutputs()?['body/cr_id_sinistre']",
+                  "item/cr_statut": "recours_initie",
+                  "item/cr_ref_recours": "@variables('varRefRecours')",
+                  "item/cr_date_traitement_agent5": "@utcNow()"
+                }
+              },
+              "runAfter": {
+                "Dataverse_Créer_Dossier_Recours": ["Succeeded"]
+              },
+              "metadata": {
+                "displayName": "Dataverse — Màj sinistre → statut recours_initié"
+              }
+            },
+            "Outlook_Email_Service_Juridique": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_office365",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                  "operationId": "SendEmailV2"
+                },
+                "parameters": {
+                  "emailMessage/To": "@parameters('env_email_juridique')",
+                  "emailMessage/Cc": "@parameters('env_email_siu')",
+                  "emailMessage/Subject": "@concat('[RECOURS ', toUpper(body('Parse_Identification_Tiers')?['priorite_recours']), '] ', variables('varRefRecours'), ' — ', outputs('Dataverse_Get_Sinistre')?['body/cr_id_sinistre'], ' — ', string(variables('varMontantRecuperable')), ' € à récupérer')",
+                  "emailMessage/Body": "@outputs('Compose_Corps_Email_HTML')",
+                  "emailMessage/Importance": "@if(equals(body('Parse_Identification_Tiers')?['priorite_recours'], 'Urgente'), 'High', 'Normal')",
+                  "emailMessage/IsHtml": true
+                }
+              },
+              "runAfter": {
+                "Dataverse_Màj_Sinistre_Recours_Initié": ["Succeeded"]
+              },
+              "metadata": {
+                "displayName": "Outlook — Envoyer email recours au service juridique (CC: SIU)"
+              }
+            },
+            "Set_varStatutFinal_Recours_Initié": {
+              "type": "SetVariable",
+              "inputs": {
+                "name": "varStatutFinal",
+                "value": "recours_initie"
+              },
+              "runAfter": {
+                "Outlook_Email_Service_Juridique": ["Succeeded"]
+              },
+              "metadata": {
+                "displayName": "Set — Statut final : recours_initié ✓"
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "Dataverse_Màj_Sinistre_Non_Viable": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "host": {
+                    "connectionName": "shared_commondataserviceforapps",
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                    "operationId": "UpdateItem"
+                  },
+                  "parameters": {
+                    "entityName": "cr_sinistres",
+                    "recordId": "@triggerOutputs()?['body/cr_id_sinistre']",
+                    "item/cr_statut": "recours_non_viable",
+                    "item/cr_motif_non_recours": "@if(equals(body('Parse_Identification_Tiers')?['recours_viable'], false), body('Parse_Identification_Tiers')?['motif_non_viabilite'], concat('Montant récupérable estimé (', string(body('Parse_Identification_Tiers')?['montant_estimé_récuperable']), ' €) inférieur au seuil de ', string(parameters('env_seuil_montant_recours')), ' €'))",
+                    "item/cr_date_traitement_agent5": "@utcNow()"
+                  }
+                },
+                "runAfter": {},
+                "metadata": {
+                  "displayName": "Dataverse — Màj sinistre → statut recours_non_viable"
+                }
+              },
+              "Set_varStatutFinal_Non_Viable": {
+                "type": "SetVariable",
+                "inputs": {
+                  "name": "varStatutFinal",
+                  "value": "recours_non_viable"
+                },
+                "runAfter": {
+                  "Dataverse_Màj_Sinistre_Non_Viable": ["Succeeded"]
+                },
+                "metadata": {
+                  "displayName": "Set — Statut final : recours_non_viable"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Scope_Chargement_Données": ["Succeeded"]
+          },
+          "metadata": {
+            "displayName": "Condition — recours_viable = true ET montant_récupérable ≥ seuil (500 €)"
+          }
+        },
+        "Compose_Résumé_Exécution": {
+          "type": "Compose",
+          "inputs": {
+            "flow_name": "flow-recours-subrogation",
+            "flow_run_id": "@workflow()?['run']?['name']",
+            "timestamp_utc": "@utcNow()",
+            "id_sinistre": "@triggerOutputs()?['body/cr_id_sinistre']",
+            "statut_final": "@variables('varStatutFinal')",
+            "ref_recours": "@variables('varRefRecours')",
+            "montant_recuperable_eur": "@variables('varMontantRecuperable')"
+          },
+          "runAfter": {
+            "Condition_Recours_Viable": ["Succeeded", "Failed", "Skipped"]
+          },
+          "metadata": {
+            "displayName": "Compose — Résumé exécution Agent 5 (monitoring)"
+          }
+        }
+      }
+    }
+  },
+  "_metadata": {
+    "version": "1.0.0",
+    "created": "2026-06-04",
+    "author": "Sébastien Donné — tkoidra.com",
+    "project": "fraud-agent-demo",
+    "agent_position": "Agent 5 / 5",
+    "pipeline_context": "Déclenché après Agent 4 (Azure OpenAI) qui a identifié un recours viable et mis à jour Dataverse avec cr_recours_possible=true et cr_statut=analyse_complete",
+    "prerequisites": [
+      "Connexion Dataverse configurée dans Power Automate (droits Read/Write sur cr_sinistres, cr_polices, cr_dossiers_recours)",
+      "Connexion Office 365 Outlook configurée avec compte de service (recours@assureur-demo.fr)",
+      "Managed Identity du flow avec Key Vault policy get sur le secret 'aoai-api-key'",
+      "Déploiement Azure OpenAI GPT-4o actif sous l'endpoint configuré dans env_aoai_endpoint",
+      "Tables Dataverse créées selon le schéma ci-dessous (champ cr_analyse_rapport_json et cr_identification_tiers_json de type Multiline Text)"
+    ],
+    "dataverse_schema": {
+      "cr_sinistres": {
+        "trigger_filter_fields": ["cr_recours_possible (Boolean)", "cr_statut (Choice: analyse_complete)"],
+        "fields_read": [
+          "cr_id_sinistre", "cr_id_police", "cr_id_assure", "cr_type",
+          "cr_montant_reclame", "cr_analyse_rapport_json", "cr_identification_tiers_json"
+        ],
+        "fields_written": [
+          "cr_statut (recours_initie | recours_non_viable)",
+          "cr_ref_recours", "cr_motif_non_recours", "cr_date_traitement_agent5"
+        ]
+      },
+      "cr_polices": {
+        "fields_read": ["cr_franchise", "cr_plafond_garantie", "cr_type_contrat"]
+      },
+      "cr_dossiers_recours": {
+        "description": "Table créée par ce flow — 1 enregistrement par recours initié",
+        "fields_written": [
+          "cr_ref_recours (Text, Primary Key)",
+          "cr_id_sinistre", "cr_id_police", "cr_id_assure",
+          "cr_tiers_nom", "cr_tiers_immatriculation", "cr_tiers_assurance_connue",
+          "cr_montant_reclame", "cr_montant_recuperable", "cr_part_responsabilite_pct",
+          "cr_fondement_type", "cr_fondement_reference", "cr_fondement_commentaire",
+          "cr_priorite", "cr_certitude_analyse",
+          "cr_lettre_recours (Multiline Text)",
+          "cr_actions_json (Multiline Text)",
+          "cr_observations", "cr_statut",
+          "cr_date_creation", "cr_date_echeance_prescription",
+          "cr_franchise_assure", "cr_tokens_aoai"
+        ]
+      }
+    },
+    "flow_steps_summary": {
+      "1_trigger": "Dataverse — sinistre modifié avec cr_recours_possible=true et cr_statut=analyse_complete",
+      "2_init": "Initialisation variables : varRefRecours, varMontantRecuperable, varStatutFinal",
+      "3_chargement": "Scope : GET sinistre + GET police + Parse JSON analyse_rapport + Parse JSON identification_tiers",
+      "4_condition": "recours_viable = true ET montant_estimé_récuperable ≥ env_seuil_montant_recours (500 €)",
+      "5a_keyvault": "[OUI] HTTP GET Key Vault — récupération clé AOAI via Managed Identity",
+      "5b_aoai": "[OUI] Scope : HTTP POST Azure OpenAI GPT-4o — rédaction lettre de recours",
+      "5c_dataverse_create": "[OUI] CREATE cr_dossiers_recours — persist dossier complet",
+      "5d_dataverse_update": "[OUI] UPDATE cr_sinistres — statut → recours_initie + ref_recours",
+      "5e_email": "[OUI] Outlook SendEmailV2 — email HTML au juridique (CC: SIU), importance High si Urgente",
+      "6_non": "[NON] UPDATE cr_sinistres — statut → recours_non_viable + motif",
+      "7_log": "Compose résumé exécution (run ID, statut, ref, montant) — pour monitoring Power BI"
+    },
+    "email_subject_format": "[RECOURS URGENTE/NORMALE/FAIBLE] REC-YYYY-XXXXXX — SIN-2024-XXXX — NNN € à récupérer",
+    "email_recipients": {
+      "to": "env_email_juridique — service juridique (destinataire action)",
+      "cc": "env_email_siu — unité SIU (information, traçabilité)"
+    },
+    "azure_openai_call": {
+      "model": "gpt-4o",
+      "temperature": 0.2,
+      "max_tokens": 1500,
+      "auth_method": "api-key depuis Key Vault via Managed Identity — jamais hardcodée",
+      "output": "Texte libre de la lettre de recours formelle en français"
+    }
+  }
+}

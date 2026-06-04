@@ -1,0 +1,502 @@
+[
+  {
+    "id_police": "POL-71000",
+    "id_assure": "ASS-1000",
+    "date_souscription": "2024-05-05",
+    "date_expiration": "2025-05-05",
+    "type_contrat": "Auto",
+    "franchise": 500,
+    "plafond_garantie": 50000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71001",
+    "id_assure": "ASS-1001",
+    "date_souscription": "2021-08-23",
+    "date_expiration": "2022-08-23",
+    "type_contrat": "Auto+MRH",
+    "franchise": 500,
+    "plafond_garantie": 100000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71002",
+    "id_assure": "ASS-1002",
+    "date_souscription": "2021-08-17",
+    "date_expiration": "2022-08-17",
+    "type_contrat": "Auto",
+    "franchise": 750,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71003",
+    "id_assure": "ASS-1003",
+    "date_souscription": "2023-07-19",
+    "date_expiration": "2024-07-18",
+    "type_contrat": "MRH",
+    "franchise": 500,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71004",
+    "id_assure": "ASS-1004",
+    "date_souscription": "2023-11-06",
+    "date_expiration": "2024-11-05",
+    "type_contrat": "MRH",
+    "franchise": 500,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71005",
+    "id_assure": "ASS-1005",
+    "date_souscription": "2021-11-10",
+    "date_expiration": "2022-11-10",
+    "type_contrat": "Auto",
+    "franchise": 300,
+    "plafond_garantie": 50000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71006",
+    "id_assure": "ASS-1006",
+    "date_souscription": "2024-05-11",
+    "date_expiration": "2025-05-11",
+    "type_contrat": "Auto",
+    "franchise": 750,
+    "plafond_garantie": 50000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71007",
+    "id_assure": "ASS-1007",
+    "date_souscription": "2021-08-18",
+    "date_expiration": "2022-08-18",
+    "type_contrat": "Auto",
+    "franchise": 500,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71008",
+    "id_assure": "ASS-1008",
+    "date_souscription": "2021-04-29",
+    "date_expiration": "2022-04-29",
+    "type_contrat": "MRH",
+    "franchise": 150,
+    "plafond_garantie": 50000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71009",
+    "id_assure": "ASS-1009",
+    "date_souscription": "2023-09-23",
+    "date_expiration": "2024-09-22",
+    "type_contrat": "MRH",
+    "franchise": 300,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71010",
+    "id_assure": "ASS-1010",
+    "date_souscription": "2023-09-01",
+    "date_expiration": "2024-08-31",
+    "type_contrat": "Auto+MRH",
+    "franchise": 300,
+    "plafond_garantie": 100000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71011",
+    "id_assure": "ASS-1011",
+    "date_souscription": "2023-12-17",
+    "date_expiration": "2024-12-16",
+    "type_contrat": "Auto+MRH",
+    "franchise": 750,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71012",
+    "id_assure": "ASS-1012",
+    "date_souscription": "2024-01-10",
+    "date_expiration": "2025-01-09",
+    "type_contrat": "Auto+MRH",
+    "franchise": 300,
+    "plafond_garantie": 100000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71013",
+    "id_assure": "ASS-1013",
+    "date_souscription": "2023-03-29",
+    "date_expiration": "2024-03-28",
+    "type_contrat": "Auto+MRH",
+    "franchise": 500,
+    "plafond_garantie": 150000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71014",
+    "id_assure": "ASS-1014",
+    "date_souscription": "2023-11-26",
+    "date_expiration": "2024-11-25",
+    "type_contrat": "Auto",
+    "franchise": 150,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71015",
+    "id_assure": "ASS-1015",
+    "date_souscription": "2022-04-06",
+    "date_expiration": "2023-04-06",
+    "type_contrat": "MRH",
+    "franchise": 500,
+    "plafond_garantie": 50000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71016",
+    "id_assure": "ASS-1016",
+    "date_souscription": "2024-04-19",
+    "date_expiration": "2025-04-19",
+    "type_contrat": "Auto+MRH",
+    "franchise": 300,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71017",
+    "id_assure": "ASS-1017",
+    "date_souscription": "2021-01-15",
+    "date_expiration": "2022-01-15",
+    "type_contrat": "MRH",
+    "franchise": 150,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71018",
+    "id_assure": "ASS-1018",
+    "date_souscription": "2021-05-19",
+    "date_expiration": "2022-05-19",
+    "type_contrat": "MRH",
+    "franchise": 500,
+    "plafond_garantie": 50000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71019",
+    "id_assure": "ASS-1019",
+    "date_souscription": "2023-11-19",
+    "date_expiration": "2024-11-18",
+    "type_contrat": "MRH",
+    "franchise": 500,
+    "plafond_garantie": 150000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71020",
+    "id_assure": "ASS-1020",
+    "date_souscription": "2022-03-15",
+    "date_expiration": "2023-03-15",
+    "type_contrat": "Auto+MRH",
+    "franchise": 300,
+    "plafond_garantie": 150000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71021",
+    "id_assure": "ASS-1021",
+    "date_souscription": "2022-05-13",
+    "date_expiration": "2023-05-13",
+    "type_contrat": "Auto",
+    "franchise": 750,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71022",
+    "id_assure": "ASS-1022",
+    "date_souscription": "2021-07-13",
+    "date_expiration": "2022-07-13",
+    "type_contrat": "MRH",
+    "franchise": 750,
+    "plafond_garantie": 100000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71023",
+    "id_assure": "ASS-1023",
+    "date_souscription": "2023-05-18",
+    "date_expiration": "2024-05-17",
+    "type_contrat": "Auto",
+    "franchise": 750,
+    "plafond_garantie": 50000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71024",
+    "id_assure": "ASS-1024",
+    "date_souscription": "2021-07-21",
+    "date_expiration": "2022-07-21",
+    "type_contrat": "MRH",
+    "franchise": 750,
+    "plafond_garantie": 100000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71025",
+    "id_assure": "ASS-1025",
+    "date_souscription": "2021-08-12",
+    "date_expiration": "2022-08-12",
+    "type_contrat": "MRH",
+    "franchise": 300,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71026",
+    "id_assure": "ASS-1026",
+    "date_souscription": "2024-01-04",
+    "date_expiration": "2025-01-03",
+    "type_contrat": "Auto",
+    "franchise": 300,
+    "plafond_garantie": 150000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71027",
+    "id_assure": "ASS-1027",
+    "date_souscription": "2022-01-11",
+    "date_expiration": "2023-01-11",
+    "type_contrat": "Auto",
+    "franchise": 750,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71028",
+    "id_assure": "ASS-1028",
+    "date_souscription": "2021-06-04",
+    "date_expiration": "2022-06-04",
+    "type_contrat": "Auto",
+    "franchise": 150,
+    "plafond_garantie": 50000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71029",
+    "id_assure": "ASS-1029",
+    "date_souscription": "2024-01-13",
+    "date_expiration": "2025-01-12",
+    "type_contrat": "MRH",
+    "franchise": 150,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71030",
+    "id_assure": "ASS-1030",
+    "date_souscription": "2021-12-07",
+    "date_expiration": "2022-12-07",
+    "type_contrat": "Auto",
+    "franchise": 750,
+    "plafond_garantie": 150000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71031",
+    "id_assure": "ASS-1031",
+    "date_souscription": "2022-03-14",
+    "date_expiration": "2023-03-14",
+    "type_contrat": "Auto",
+    "franchise": 150,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71032",
+    "id_assure": "ASS-1032",
+    "date_souscription": "2023-02-16",
+    "date_expiration": "2024-02-16",
+    "type_contrat": "MRH",
+    "franchise": 750,
+    "plafond_garantie": 100000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71033",
+    "id_assure": "ASS-1033",
+    "date_souscription": "2023-07-21",
+    "date_expiration": "2024-07-20",
+    "type_contrat": "Auto",
+    "franchise": 750,
+    "plafond_garantie": 150000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71034",
+    "id_assure": "ASS-1034",
+    "date_souscription": "2021-11-14",
+    "date_expiration": "2022-11-14",
+    "type_contrat": "MRH",
+    "franchise": 500,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71035",
+    "id_assure": "ASS-1035",
+    "date_souscription": "2021-04-30",
+    "date_expiration": "2022-04-30",
+    "type_contrat": "Auto+MRH",
+    "franchise": 150,
+    "plafond_garantie": 100000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71036",
+    "id_assure": "ASS-1036",
+    "date_souscription": "2021-04-28",
+    "date_expiration": "2022-04-28",
+    "type_contrat": "MRH",
+    "franchise": 750,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71037",
+    "id_assure": "ASS-1037",
+    "date_souscription": "2021-04-27",
+    "date_expiration": "2022-04-27",
+    "type_contrat": "Auto+MRH",
+    "franchise": 150,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71038",
+    "id_assure": "ASS-1038",
+    "date_souscription": "2021-05-21",
+    "date_expiration": "2022-05-21",
+    "type_contrat": "Auto+MRH",
+    "franchise": 150,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71039",
+    "id_assure": "ASS-1039",
+    "date_souscription": "2023-04-07",
+    "date_expiration": "2024-04-06",
+    "type_contrat": "MRH",
+    "franchise": 300,
+    "plafond_garantie": 50000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71040",
+    "id_assure": "ASS-1040",
+    "date_souscription": "2021-06-17",
+    "date_expiration": "2022-06-17",
+    "type_contrat": "Auto",
+    "franchise": 500,
+    "plafond_garantie": 100000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71041",
+    "id_assure": "ASS-1041",
+    "date_souscription": "2022-02-23",
+    "date_expiration": "2023-02-23",
+    "type_contrat": "Auto+MRH",
+    "franchise": 500,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71042",
+    "id_assure": "ASS-1042",
+    "date_souscription": "2022-06-28",
+    "date_expiration": "2023-06-28",
+    "type_contrat": "Auto",
+    "franchise": 300,
+    "plafond_garantie": 100000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71043",
+    "id_assure": "ASS-1043",
+    "date_souscription": "2023-07-26",
+    "date_expiration": "2024-07-25",
+    "type_contrat": "Auto",
+    "franchise": 150,
+    "plafond_garantie": 50000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71044",
+    "id_assure": "ASS-1044",
+    "date_souscription": "2023-07-28",
+    "date_expiration": "2024-07-27",
+    "type_contrat": "Auto+MRH",
+    "franchise": 150,
+    "plafond_garantie": 50000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71045",
+    "id_assure": "ASS-1045",
+    "date_souscription": "2024-01-07",
+    "date_expiration": "2025-01-06",
+    "type_contrat": "MRH",
+    "franchise": 500,
+    "plafond_garantie": 75000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71046",
+    "id_assure": "ASS-1046",
+    "date_souscription": "2022-12-16",
+    "date_expiration": "2023-12-16",
+    "type_contrat": "MRH",
+    "franchise": 300,
+    "plafond_garantie": 100000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71047",
+    "id_assure": "ASS-1047",
+    "date_souscription": "2022-08-07",
+    "date_expiration": "2023-08-07",
+    "type_contrat": "MRH",
+    "franchise": 750,
+    "plafond_garantie": 100000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71048",
+    "id_assure": "ASS-1048",
+    "date_souscription": "2023-12-20",
+    "date_expiration": "2024-12-19",
+    "type_contrat": "MRH",
+    "franchise": 500,
+    "plafond_garantie": 50000,
+    "statut_police": "active"
+  },
+  {
+    "id_police": "POL-71049",
+    "id_assure": "ASS-1049",
+    "date_souscription": "2021-10-03",
+    "date_expiration": "2022-10-03",
+    "type_contrat": "Auto",
+    "franchise": 150,
+    "plafond_garantie": 50000,
+    "statut_police": "active"
+  }
+]

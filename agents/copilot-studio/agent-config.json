@@ -1,0 +1,1002 @@
+{
+  "schema_version": "2.0",
+  "agent": {
+    "id": "cs-agent-fraude-orchestrateur-v1",
+    "name": "Agent Orchestrateur — Déclaration & Triage Sinistres",
+    "description": "Agent 1 du pipeline de détection fraude & recours. Reçoit les sinistres entrants, extrait les données structurées, enrichit via Dataverse, appelle score_single() sur Azure ML et route vers STP (score < 30), investigation (30–59) ou alerte SIU (≥ 60).",
+    "language": "fr-FR",
+    "version": "1.0.0",
+    "created": "2026-06-04",
+    "icon": "https://kv-fraude-agent-demo.vault.azure.net/secrets/agent-icon-url",
+    "environment": {
+      "name": "fraude-agent-demo",
+      "region": "francecentral",
+      "type": "Production"
+    },
+    "generative_ai": {
+      "enabled": true,
+      "model": "gpt-4o",
+      "fallback_to_generative": true,
+      "instructions": "Tu es un agent de traitement de sinistres d'assurance IARD. Tu collectes les informations nécessaires à la déclaration, tu postes le score de fraude calculé et tu orienting le dossier vers le bon circuit. Reste factuel, professionnel et bienveillant avec l'assuré. Ne jamais divulguer le score de fraude ni les reason codes à l'assuré."
+    }
+  },
+
+  "authentication": {
+    "type": "AzureAD",
+    "provider": "Microsoft Entra ID",
+    "tenant_id": "REMPLACER_PAR_TENANT_ID",
+    "client_id": "REMPLACER_PAR_APP_CLIENT_ID",
+    "scopes": ["https://org.crm.dynamics.com/.default"],
+    "token_endpoint": "https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
+    "roles": {
+      "assure": {
+        "description": "Assuré — peut déclarer un sinistre et consulter son statut",
+        "azure_ad_group": "grp-assures@assureur-demo.fr"
+      },
+      "agent_siu": {
+        "description": "Investigateur SIU — reçoit les escalades, voit les scores et reason codes",
+        "azure_ad_group": "grp-siu-agents@assureur-demo.fr"
+      },
+      "superviseur": {
+        "description": "Superviseur SIU — accès complet aux métriques et aux dossiers",
+        "azure_ad_group": "grp-siu-superviseurs@assureur-demo.fr"
+      }
+    }
+  },
+
+  "entities": [
+    {
+      "id": "entity-type-sinistre",
+      "name": "TypeSinistre",
+      "type": "enum",
+      "description": "Types de sinistres IARD acceptés par le pipeline",
+      "values": [
+        { "value": "accident_auto",        "synonyms": ["accident", "accident de voiture", "collision", "choc", "accrochage"] },
+        { "value": "bris_de_glace",        "synonyms": ["vitre", "pare-brise", "fenêtre brisée", "vitrage"] },
+        { "value": "catastrophe_naturelle","synonyms": ["inondation", "tempête", "grêle", "catastrophe", "intempérie"] },
+        { "value": "degat_des_eaux",       "synonyms": ["dégât des eaux", "fuite", "dodo", "DDO", "eau", "inondation intérieure"] },
+        { "value": "incendie",             "synonyms": ["feu", "incendie", "brûlure", "combustion"] },
+        { "value": "vol",                  "synonyms": ["vol", "cambriolage", "effraction", "vol à la roulotte", "subtraction"] }
+      ]
+    },
+    {
+      "id": "entity-montant",
+      "name": "MontantSinistre",
+      "type": "number",
+      "description": "Montant estimé des dégâts en euros — entier positif",
+      "validation": {
+        "min": 1,
+        "max": 500000,
+        "error_message": "Le montant doit être compris entre 1 € et 500 000 €. Veuillez saisir un montant valide."
+      }
+    },
+    {
+      "id": "entity-id-police",
+      "name": "NumeroPolice",
+      "type": "regex",
+      "description": "Numéro de contrat d'assurance au format POL-XXXXX",
+      "pattern": "^POL-[0-9]{5}$",
+      "error_message": "Le numéro de police doit être au format POL-XXXXX (ex : POL-78234). Veuillez vérifier votre contrat."
+    },
+    {
+      "id": "entity-date",
+      "name": "DateSinistre",
+      "type": "datetime",
+      "description": "Date de survenance du sinistre",
+      "format": "YYYY-MM-DD",
+      "validation": {
+        "not_future": true,
+        "max_past_days": 730,
+        "error_message": "La date ne peut pas être dans le futur ni dépasser 2 ans. Vérifiez la date du sinistre."
+      }
+    },
+    {
+      "id": "entity-id-reparateur",
+      "name": "IdReparateur",
+      "type": "regex",
+      "description": "Identifiant du réparateur agréé (facultatif)",
+      "pattern": "^REP-[0-9]{3}$",
+      "required": false
+    }
+  ],
+
+  "variables": {
+    "global": [
+      { "name": "gv_id_sinistre",          "type": "string",  "scope": "global", "description": "Identifiant généré du sinistre (SIN-YYYY-XXXX)" },
+      { "name": "gv_id_police",             "type": "string",  "scope": "global", "description": "Numéro de police saisi par l'assuré" },
+      { "name": "gv_type_sinistre",         "type": "string",  "scope": "global", "description": "Type de sinistre (enum TypeSinistre)" },
+      { "name": "gv_montant_reclame",       "type": "number",  "scope": "global", "description": "Montant estimé des dégâts en €" },
+      { "name": "gv_date_declaration",      "type": "string",  "scope": "global", "description": "Date de déclaration au format YYYY-MM-DD" },
+      { "name": "gv_id_reparateur",         "type": "string",  "scope": "global", "description": "ID réparateur si renseigné, sinon null" },
+      { "name": "gv_adresse_ip",            "type": "string",  "scope": "global", "description": "IP de déclaration capturée depuis System.Channel.IpAddress" },
+      { "name": "gv_reparateur_count_90d",  "type": "number",  "scope": "global", "description": "Enrichissement Dataverse — nb sinistres même réparateur sur 90j" },
+      { "name": "gv_ip_count_30d",          "type": "number",  "scope": "global", "description": "Enrichissement Dataverse — nb sinistres même IP sur 30j" },
+      { "name": "gv_score_fraude",          "type": "number",  "scope": "global", "description": "Score final (0–100) retourné par Azure ML" },
+      { "name": "gv_score_ml",             "type": "number",  "scope": "global", "description": "Composante ML du score (0–50)" },
+      { "name": "gv_score_regles",         "type": "number",  "scope": "global", "description": "Composante règles métier du score (0–50)" },
+      { "name": "gv_categorie_risque",     "type": "string",  "scope": "global", "description": "Catégorie issue du score : Faible | Moyen | Élevé" },
+      { "name": "gv_reason_codes",         "type": "string",  "scope": "global", "description": "JSON stringifié des reason codes (pour SIU uniquement)" },
+      { "name": "gv_statut_routing",       "type": "string",  "scope": "global", "description": "Résultat du routing : stp | investigation | alerte_siu" },
+      { "name": "gv_police_data",          "type": "record",  "scope": "global", "description": "Objet police complet depuis Dataverse (franchise, plafond, etc.)" },
+      { "name": "gv_erreur_scoring",       "type": "boolean", "scope": "global", "description": "True si l'appel Azure ML a échoué (fallback STP conservateur)" }
+    ]
+  },
+
+  "actions": [
+    {
+      "id": "action-dataverse-get-police",
+      "name": "Dataverse_GetPolice",
+      "type": "dataverse",
+      "description": "Récupère la police et ses paramètres (franchise, plafond, date_souscription) pour enrichir le payload de scoring",
+      "connector": "shared_commondataserviceforapps",
+      "operation": "GetItem",
+      "parameters": {
+        "entityName": "cr_polices",
+        "recordId": "{gv_id_police}",
+        "select": "cr_id_police,cr_date_souscription,cr_franchise,cr_plafond_garantie,cr_type_contrat,cr_statut_police"
+      },
+      "output_mapping": {
+        "gv_police_data": "@outputs('Dataverse_GetPolice')?['body']"
+      },
+      "error_handling": {
+        "on_not_found": "redirect:Topic_Erreur_Police_Introuvable",
+        "on_error": "redirect:Topic_Gestion_Erreurs"
+      }
+    },
+    {
+      "id": "action-dataverse-enrich-reparateur",
+      "name": "Dataverse_EnrichReparateur",
+      "type": "dataverse_query",
+      "description": "Compte le nombre de sinistres envoyés vers le même réparateur dans les 90 derniers jours — requis par score_single() comme _reparateur_count_90d",
+      "connector": "shared_commondataserviceforapps",
+      "operation": "ListItems",
+      "parameters": {
+        "entityName": "cr_sinistres",
+        "filter": "cr_id_reparateur eq '{gv_id_reparateur}' and cr_date_declaration ge {date_90j_ago} and cr_id_sinistre ne '{gv_id_sinistre}'",
+        "select": "cr_id_sinistre",
+        "top": 50
+      },
+      "output_mapping": {
+        "gv_reparateur_count_90d": "@length(outputs('Dataverse_EnrichReparateur')?['body/value'])"
+      },
+      "condition": "gv_id_reparateur != null",
+      "default_if_skipped": { "gv_reparateur_count_90d": 0 }
+    },
+    {
+      "id": "action-dataverse-enrich-ip",
+      "name": "Dataverse_EnrichIP",
+      "type": "dataverse_query",
+      "description": "Compte le nombre de sinistres depuis la même adresse IP dans les 30 derniers jours — requis par score_single() comme _ip_count_30d",
+      "connector": "shared_commondataserviceforapps",
+      "operation": "ListItems",
+      "parameters": {
+        "entityName": "cr_sinistres",
+        "filter": "cr_adresse_ip_declaration eq '{gv_adresse_ip}' and cr_date_declaration ge {date_30j_ago} and cr_id_sinistre ne '{gv_id_sinistre}'",
+        "select": "cr_id_sinistre",
+        "top": 50
+      },
+      "output_mapping": {
+        "gv_ip_count_30d": "@length(outputs('Dataverse_EnrichIP')?['body/value'])"
+      },
+      "condition": "gv_adresse_ip != null",
+      "default_if_skipped": { "gv_ip_count_30d": 0 }
+    },
+    {
+      "id": "action-azureml-score-single",
+      "name": "AzureML_ScoreSingle",
+      "type": "http",
+      "description": "Appel temps réel à l'endpoint Azure ML — wrappé par le script scoring-model.py score_single(). Retourne score_fraude (0-100), score_ml (0-50), score_regles (0-50), categorie_risque, reason_codes.",
+      "method": "POST",
+      "uri": "https://aml-fraude-demo.azureml.azure.com/score",
+      "authentication": {
+        "type": "ManagedServiceIdentity",
+        "audience": "https://ml.azure.com"
+      },
+      "headers": {
+        "Content-Type": "application/json",
+        "azureml-model-deployment": "fraud-scoring-v1"
+      },
+      "body": {
+        "sinistre": {
+          "id_sinistre": "{gv_id_sinistre}",
+          "id_police": "{gv_id_police}",
+          "date_declaration": "{gv_date_declaration}",
+          "type": "{gv_type_sinistre}",
+          "montant_reclame": "{gv_montant_reclame}",
+          "id_reparateur": "{gv_id_reparateur}",
+          "adresse_ip_declaration": "{gv_adresse_ip}",
+          "_reparateur_count_90d": "{gv_reparateur_count_90d}",
+          "_ip_count_30d": "{gv_ip_count_30d}",
+          "rapport_police": null,
+          "score_fraude": null,
+          "statut": "en_cours"
+        },
+        "police": {
+          "id_police": "{gv_id_police}",
+          "date_souscription": "{gv_police_data.cr_date_souscription}",
+          "franchise": "{gv_police_data.cr_franchise}",
+          "plafond_garantie": "{gv_police_data.cr_plafond_garantie}",
+          "type_contrat": "{gv_police_data.cr_type_contrat}"
+        },
+        "model_dir": "/model_artifacts"
+      },
+      "output_mapping": {
+        "gv_score_fraude":    "@outputs('AzureML_ScoreSingle')?['body/score_fraude']",
+        "gv_score_ml":        "@outputs('AzureML_ScoreSingle')?['body/score_ml']",
+        "gv_score_regles":    "@outputs('AzureML_ScoreSingle')?['body/score_regles']",
+        "gv_categorie_risque":"@outputs('AzureML_ScoreSingle')?['body/categorie_risque']",
+        "gv_reason_codes":    "@string(outputs('AzureML_ScoreSingle')?['body/reason_codes'])"
+      },
+      "error_handling": {
+        "on_timeout_ms": 8000,
+        "on_error": "set_variable:gv_erreur_scoring=true",
+        "fallback": "redirect:Topic_Fallback_Scoring"
+      }
+    },
+    {
+      "id": "action-dataverse-create-sinistre",
+      "name": "Dataverse_CreateSinistre",
+      "type": "dataverse",
+      "description": "Persiste le sinistre enrichi (avec score, catégorie, reason codes) dans Dataverse après scoring",
+      "connector": "shared_commondataserviceforapps",
+      "operation": "CreateItem",
+      "parameters": {
+        "entityName": "cr_sinistres",
+        "item": {
+          "cr_id_sinistre":             "{gv_id_sinistre}",
+          "cr_id_police":               "{gv_id_police}",
+          "cr_id_assure":               "{System.User.Id}",
+          "cr_date_declaration":        "{gv_date_declaration}",
+          "cr_type":                    "{gv_type_sinistre}",
+          "cr_montant_reclame":         "{gv_montant_reclame}",
+          "cr_id_reparateur":           "{gv_id_reparateur}",
+          "cr_adresse_ip_declaration":  "{gv_adresse_ip}",
+          "cr_score_fraude":            "{gv_score_fraude}",
+          "cr_score_ml":                "{gv_score_ml}",
+          "cr_score_regles":            "{gv_score_regles}",
+          "cr_categorie_risque":        "{gv_categorie_risque}",
+          "cr_reason_codes":            "{gv_reason_codes}",
+          "cr_statut":                  "analyse_complete",
+          "cr_recours_possible":        false,
+          "cr_flag_fraude_suspect":     "{gv_score_fraude >= 30}",
+          "cr_reparateur_count_90d":    "{gv_reparateur_count_90d}",
+          "cr_ip_count_30d":            "{gv_ip_count_30d}",
+          "cr_date_creation_agent1":    "{System.DateTime.UtcNow}"
+        }
+      }
+    },
+    {
+      "id": "action-pa-trigger-synapse",
+      "name": "PowerAutomate_TriggerSynapse",
+      "type": "power_automate",
+      "description": "Déclenche l'analyse de graphe Synapse (Agent 3) pour les dossiers à risque Moyen ou Élevé — appel asynchrone non bloquant",
+      "flow_id": "flow-synapse-graph-analysis",
+      "trigger_type": "instant",
+      "inputs": {
+        "id_sinistre": "{gv_id_sinistre}",
+        "id_reparateur": "{gv_id_reparateur}",
+        "adresse_ip": "{gv_adresse_ip}",
+        "score_fraude": "{gv_score_fraude}"
+      },
+      "async": true,
+      "condition": "gv_categorie_risque IN ['Moyen', 'Élevé']"
+    },
+    {
+      "id": "action-pa-trigger-openai",
+      "name": "PowerAutomate_TriggerOpenAI",
+      "type": "power_automate",
+      "description": "Déclenche l'analyse sémantique Azure OpenAI (Agent 4) pour les dossiers Élevé avec rapport de police — appel asynchrone",
+      "flow_id": "flow-openai-rapport-police",
+      "trigger_type": "instant",
+      "inputs": {
+        "id_sinistre": "{gv_id_sinistre}",
+        "score_fraude": "{gv_score_fraude}",
+        "reason_codes": "{gv_reason_codes}"
+      },
+      "async": true,
+      "condition": "gv_categorie_risque == 'Élevé'"
+    },
+    {
+      "id": "action-teams-notif-siu",
+      "name": "Teams_NotifSIU",
+      "type": "teams_message",
+      "description": "Envoie une carte adaptive Teams au canal SIU pour les dossiers nécessitant une investigation",
+      "channel_id": "19:siu-alertes@thread.tacv2",
+      "card_type": "AdaptiveCard",
+      "card_payload_ref": "adaptive-card-alerte-siu",
+      "condition": "gv_categorie_risque IN ['Moyen', 'Élevé']"
+    }
+  ],
+
+  "topics": [
+    {
+      "id": "topic-accueil",
+      "name": "Accueil & Identification",
+      "trigger": {
+        "type": "phrases",
+        "phrases": [
+          "déclarer un sinistre",
+          "nouveau sinistre",
+          "je veux déclarer",
+          "signaler un sinistre",
+          "j'ai eu un accident",
+          "j'ai subi un vol",
+          "je veux signaler",
+          "sinistre",
+          "déclaration"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "n01",
+          "type": "message",
+          "content": "Bonjour, je suis l'agent de traitement des sinistres. Je vais recueillir vos informations et enregistrer votre déclaration. Cette conversation est sécurisée."
+        },
+        {
+          "id": "n02",
+          "type": "set_variable",
+          "variable": "gv_adresse_ip",
+          "value": "{System.Channel.IpAddress}",
+          "comment": "Capture IP de la session Teams/Webchat — utilisée pour le clustering IP par score_single()"
+        },
+        {
+          "id": "n03",
+          "type": "redirect",
+          "target_topic": "topic-saisie-sinistre"
+        }
+      ]
+    },
+
+    {
+      "id": "topic-saisie-sinistre",
+      "name": "Saisie & Extraction Données Sinistre",
+      "trigger": { "type": "sub_topic" },
+      "nodes": [
+        {
+          "id": "n10",
+          "type": "question",
+          "text": "Quel est votre **numéro de police d'assurance** ? (format : POL-XXXXX)",
+          "variable": "gv_id_police",
+          "entity": "NumeroPolice",
+          "reprompt": "Je n'ai pas reconnu ce format. Votre numéro de police se trouve sur votre carte verte ou votre contrat. Il commence par POL- suivi de 5 chiffres.",
+          "max_retries": 3,
+          "on_max_retries": "redirect:topic-gestion-erreurs"
+        },
+        {
+          "id": "n11",
+          "type": "action",
+          "action_id": "action-dataverse-get-police",
+          "comment": "Vérifie que la police existe et charge ses paramètres avant de continuer"
+        },
+        {
+          "id": "n12",
+          "type": "question",
+          "text": "Quel est le **type de sinistre** que vous souhaitez déclarer ?\n\n• Accident auto\n• Bris de glace\n• Catastrophe naturelle\n• Dégât des eaux\n• Incendie\n• Vol",
+          "variable": "gv_type_sinistre",
+          "entity": "TypeSinistre",
+          "reprompt": "Je n'ai pas reconnu ce type. Pouvez-vous choisir parmi : accident auto, bris de glace, catastrophe naturelle, dégât des eaux, incendie ou vol ?",
+          "max_retries": 3
+        },
+        {
+          "id": "n13",
+          "type": "question",
+          "text": "Quelle est la **date du sinistre** ? (format : JJ/MM/AAAA)",
+          "variable": "gv_date_declaration",
+          "entity": "DateSinistre",
+          "reprompt": "La date saisie n'est pas valide. Veuillez indiquer une date passée au format JJ/MM/AAAA.",
+          "max_retries": 3
+        },
+        {
+          "id": "n14",
+          "type": "question",
+          "text": "Quel est le **montant estimé des dégâts** en euros ?",
+          "variable": "gv_montant_reclame",
+          "entity": "MontantSinistre",
+          "reprompt": "Le montant doit être un nombre entier positif en euros (ex : 3500). Veuillez réessayer.",
+          "max_retries": 3
+        },
+        {
+          "id": "n15",
+          "type": "question",
+          "text": "Avez-vous fait appel à un **réparateur agréé** ? Si oui, quel est son identifiant (format REP-XXX) ? Sinon, répondez *non*.",
+          "variable": "gv_id_reparateur",
+          "entity": "IdReparateur",
+          "required": false,
+          "optional_keywords": ["non", "pas de réparateur", "aucun", "no"],
+          "on_optional_skip": { "gv_id_reparateur": null }
+        },
+        {
+          "id": "n16",
+          "type": "set_variable",
+          "variable": "gv_id_sinistre",
+          "value": "concat('SIN-', formatYear(System.DateTime.UtcNow), '-', substring(guid(), 0, 4))",
+          "comment": "Génération de l'identifiant unique du sinistre"
+        },
+        {
+          "id": "n17",
+          "type": "adaptive_card",
+          "card_id": "card-recapitulatif-saisie",
+          "title": "Récapitulatif de votre déclaration",
+          "fields": [
+            { "label": "Référence",       "value": "{gv_id_sinistre}" },
+            { "label": "Police",          "value": "{gv_id_police}" },
+            { "label": "Type sinistre",   "value": "{gv_type_sinistre}" },
+            { "label": "Date",            "value": "{gv_date_declaration}" },
+            { "label": "Montant estimé",  "value": "{gv_montant_reclame} €" },
+            { "label": "Réparateur",      "value": "{gv_id_reparateur}" }
+          ],
+          "actions": [
+            { "type": "confirm", "title": "Confirmer",  "value": "oui" },
+            { "type": "cancel",  "title": "Corriger",   "value": "non" }
+          ]
+        },
+        {
+          "id": "n18",
+          "type": "condition",
+          "variable": "Activity.Value",
+          "branches": [
+            {
+              "condition": "equals('oui')",
+              "nodes": [
+                { "id": "n18a", "type": "redirect", "target_topic": "topic-enrichissement-scoring" }
+              ]
+            },
+            {
+              "condition": "equals('non')",
+              "nodes": [
+                { "id": "n18b", "type": "message", "content": "Bien sûr, reprenons depuis le début." },
+                { "id": "n18c", "type": "redirect", "target_topic": "topic-saisie-sinistre" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "topic-enrichissement-scoring",
+      "name": "Enrichissement Dataverse & Scoring Azure ML",
+      "trigger": { "type": "sub_topic" },
+      "nodes": [
+        {
+          "id": "n20",
+          "type": "message",
+          "content": "Merci. Je procède maintenant à l'analyse de votre dossier... ⏳"
+        },
+        {
+          "id": "n21",
+          "type": "action",
+          "action_id": "action-dataverse-enrich-reparateur",
+          "comment": "Récupère _reparateur_count_90d pour score_single() — 0 si pas de réparateur"
+        },
+        {
+          "id": "n22",
+          "type": "action",
+          "action_id": "action-dataverse-enrich-ip",
+          "comment": "Récupère _ip_count_30d pour score_single() — 0 si IP inconnue"
+        },
+        {
+          "id": "n23",
+          "type": "action",
+          "action_id": "action-azureml-score-single",
+          "comment": "Appel synchrone score_single() — timeout 8s. Payload complet : sinistre + police + champs enrichis _reparateur_count_90d et _ip_count_30d"
+        },
+        {
+          "id": "n24",
+          "type": "condition",
+          "variable": "gv_erreur_scoring",
+          "branches": [
+            {
+              "condition": "equals(true)",
+              "nodes": [
+                { "id": "n24a", "type": "redirect", "target_topic": "topic-fallback-scoring" }
+              ]
+            },
+            {
+              "condition": "else",
+              "nodes": [
+                { "id": "n24b", "type": "action", "action_id": "action-dataverse-create-sinistre" },
+                { "id": "n24c", "type": "redirect", "target_topic": "topic-routing-score" }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "topic-routing-score",
+      "name": "Routing par catégorie de risque",
+      "trigger": { "type": "sub_topic" },
+      "nodes": [
+        {
+          "id": "n30",
+          "type": "condition",
+          "variable": "gv_score_fraude",
+          "comment": "Seuils définis dans scoring-model.py : Faible < 30, Moyen 30–59, Élevé ≥ 60",
+          "branches": [
+            {
+              "condition": "less_than(30)",
+              "label": "Faible risque — STP",
+              "nodes": [
+                {
+                  "id": "n30a",
+                  "type": "set_variable",
+                  "variable": "gv_statut_routing",
+                  "value": "stp"
+                },
+                {
+                  "id": "n30b",
+                  "type": "redirect",
+                  "target_topic": "topic-stp-faible-risque"
+                }
+              ]
+            },
+            {
+              "condition": "between(30, 59)",
+              "label": "Risque moyen — Investigation légère",
+              "nodes": [
+                {
+                  "id": "n30c",
+                  "type": "set_variable",
+                  "variable": "gv_statut_routing",
+                  "value": "investigation"
+                },
+                {
+                  "id": "n30d",
+                  "type": "redirect",
+                  "target_topic": "topic-investigation-moyen"
+                }
+              ]
+            },
+            {
+              "condition": "greater_or_equal(60)",
+              "label": "Risque élevé — Alerte SIU",
+              "nodes": [
+                {
+                  "id": "n30e",
+                  "type": "set_variable",
+                  "variable": "gv_statut_routing",
+                  "value": "alerte_siu"
+                },
+                {
+                  "id": "n30f",
+                  "type": "redirect",
+                  "target_topic": "topic-alerte-siu-eleve"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "topic-stp-faible-risque",
+      "name": "STP — Traitement Standard (score < 30)",
+      "trigger": { "type": "sub_topic" },
+      "nodes": [
+        {
+          "id": "n40",
+          "type": "adaptive_card",
+          "card_id": "card-confirmation-stp",
+          "title": "✅ Votre déclaration a été enregistrée",
+          "body": "Votre dossier **{gv_id_sinistre}** a été pris en charge. Il sera traité dans le cadre du circuit standard et vous recevrez une réponse sous 5 jours ouvrés.",
+          "fields": [
+            { "label": "Référence dossier", "value": "{gv_id_sinistre}" },
+            { "label": "Type",              "value": "{gv_type_sinistre}" },
+            { "label": "Montant déclaré",   "value": "{gv_montant_reclame} €" },
+            { "label": "Statut",            "value": "En traitement — circuit standard" },
+            { "label": "Délai estimé",      "value": "5 jours ouvrés" }
+          ]
+        },
+        {
+          "id": "n41",
+          "type": "message",
+          "content": "Vous recevrez un email de confirmation à l'adresse enregistrée sur votre contrat. Y a-t-il autre chose que je puisse faire pour vous ?"
+        },
+        {
+          "id": "n42",
+          "type": "end_conversation",
+          "reason": "stp_completed"
+        }
+      ]
+    },
+
+    {
+      "id": "topic-investigation-moyen",
+      "name": "Investigation — Risque Moyen (score 30–59)",
+      "trigger": { "type": "sub_topic" },
+      "nodes": [
+        {
+          "id": "n50",
+          "type": "message",
+          "content": "Votre déclaration **{gv_id_sinistre}** a bien été enregistrée. En raison de certains éléments, votre dossier fait l'objet d'une vérification documentaire complémentaire."
+        },
+        {
+          "id": "n51",
+          "type": "question",
+          "text": "Pour accélérer le traitement, pourriez-vous nous fournir :\n• Une photo des dommages\n• Tout justificatif utile (rapport, facture, etc.)\n\nPouvez-vous les joindre maintenant ou préférez-vous les envoyer par email ?",
+          "variable": "local_choix_documents",
+          "choices": ["Joindre maintenant", "Envoyer par email", "Je n'ai pas de document"]
+        },
+        {
+          "id": "n52",
+          "type": "action",
+          "action_id": "action-pa-trigger-synapse",
+          "comment": "Déclenche Agent 3 (Synapse) de façon asynchrone — analyse de graphe en arrière-plan"
+        },
+        {
+          "id": "n53",
+          "type": "action",
+          "action_id": "action-teams-notif-siu",
+          "comment": "Notification Teams au canal SIU avec résumé dossier et score"
+        },
+        {
+          "id": "n54",
+          "type": "adaptive_card",
+          "card_id": "card-confirmation-investigation",
+          "title": "🔎 Vérification complémentaire en cours",
+          "body": "Votre dossier est en cours d'analyse approfondie. Notre équipe vous contactera dans un délai de 48h ouvrées.",
+          "fields": [
+            { "label": "Référence dossier", "value": "{gv_id_sinistre}" },
+            { "label": "Statut",            "value": "Vérification documentaire" },
+            { "label": "Délai de retour",   "value": "48h ouvrées" },
+            { "label": "Contact",           "value": "sinistres@assureur-demo.fr" }
+          ]
+        },
+        {
+          "id": "n55",
+          "type": "end_conversation",
+          "reason": "investigation_initiated"
+        }
+      ]
+    },
+
+    {
+      "id": "topic-alerte-siu-eleve",
+      "name": "Alerte SIU — Risque Élevé (score ≥ 60)",
+      "trigger": { "type": "sub_topic" },
+      "nodes": [
+        {
+          "id": "n60",
+          "type": "message",
+          "content": "Votre déclaration **{gv_id_sinistre}** a bien été enregistrée. Notre service de gestion des sinistres va examiner votre dossier en priorité."
+        },
+        {
+          "id": "n61",
+          "type": "action",
+          "action_id": "action-pa-trigger-synapse",
+          "comment": "Déclenche Agent 3 (Synapse) asynchrone — analyse réseau prioritaire"
+        },
+        {
+          "id": "n62",
+          "type": "action",
+          "action_id": "action-pa-trigger-openai",
+          "comment": "Déclenche Agent 4 (Azure OpenAI) si rapport de police disponible — asynchrone"
+        },
+        {
+          "id": "n63",
+          "type": "action",
+          "action_id": "action-teams-notif-siu",
+          "comment": "Notification Teams prioritaire au canal SIU — carte enrichie avec score et reason codes"
+        },
+        {
+          "id": "n64",
+          "type": "adaptive_card",
+          "card_id": "card-confirmation-prioritaire",
+          "title": "📋 Dossier transmis en traitement prioritaire",
+          "body": "Votre dossier a été transmis à notre équipe spécialisée. Un gestionnaire vous contactera directement dans un délai de 24h ouvrées pour faire le point sur votre situation.",
+          "fields": [
+            { "label": "Référence dossier", "value": "{gv_id_sinistre}" },
+            { "label": "Statut",            "value": "Traitement prioritaire" },
+            { "label": "Délai de contact",  "value": "24h ouvrées" },
+            { "label": "Gestionnaire",      "value": "Service sinistres prioritaires" }
+          ]
+        },
+        {
+          "id": "n65",
+          "type": "end_conversation",
+          "reason": "siu_alert_triggered"
+        }
+      ]
+    },
+
+    {
+      "id": "topic-affichage-reason-codes-siu",
+      "name": "Affichage Reason Codes (Agent SIU uniquement)",
+      "trigger": {
+        "type": "phrases",
+        "phrases": ["voir le score", "raisons de l'alerte", "reason codes", "pourquoi alerte", "détails fraude"],
+        "role_required": "agent_siu"
+      },
+      "nodes": [
+        {
+          "id": "n70",
+          "type": "condition",
+          "variable": "System.User.Role",
+          "branches": [
+            {
+              "condition": "not_in(['agent_siu', 'superviseur', 'admin'])",
+              "nodes": [
+                {
+                  "id": "n70a",
+                  "type": "message",
+                  "content": "Ces informations sont réservées aux agents SIU. Veuillez contacter votre responsable."
+                },
+                { "id": "n70b", "type": "end_conversation", "reason": "unauthorized" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "n71",
+          "type": "question",
+          "text": "Quel est le numéro du dossier dont vous souhaitez consulter les détails ? (format : SIN-YYYY-XXXX)",
+          "variable": "local_id_sinistre_lookup",
+          "entity": "StringPattern"
+        },
+        {
+          "id": "n72",
+          "type": "action",
+          "action_id": "action-dataverse-get-police",
+          "comment": "Rechargement du sinistre depuis Dataverse pour affichage SIU"
+        },
+        {
+          "id": "n73",
+          "type": "adaptive_card",
+          "card_id": "card-siu-score-detail",
+          "title": "🔍 Détail scoring — {local_id_sinistre_lookup}",
+          "comment": "Carte réservée agents SIU — jamais affichée à l'assuré",
+          "fields": [
+            { "label": "Score fraude",      "value": "{gv_score_fraude} / 100" },
+            { "label": "Score règles",      "value": "{gv_score_regles} / 50" },
+            { "label": "Score ML",          "value": "{gv_score_ml} / 50" },
+            { "label": "Catégorie",         "value": "{gv_categorie_risque}" },
+            { "label": "Reason codes",      "value": "{gv_reason_codes}" },
+            { "label": "IP déclaration",    "value": "{gv_adresse_ip}" },
+            { "label": "IP sinistres 30j",  "value": "{gv_ip_count_30d}" },
+            { "label": "Réparateur 90j",    "value": "{gv_reparateur_count_90d}" }
+          ],
+          "actions": [
+            { "type": "button", "title": "Confirmer fraude",  "value": "fraude_confirmee" },
+            { "type": "button", "title": "Clore sans suite",   "value": "clos_sans_suite" },
+            { "type": "button", "title": "Escalader SIU",      "value": "escalade_siu" }
+          ]
+        },
+        {
+          "id": "n74",
+          "type": "condition",
+          "variable": "Activity.Value",
+          "branches": [
+            {
+              "condition": "equals('fraude_confirmee')",
+              "nodes": [
+                {
+                  "id": "n74a",
+                  "type": "action",
+                  "action_id": "action-dataverse-create-sinistre",
+                  "override": { "cr_statut": "fraude_confirmee" }
+                },
+                { "id": "n74b", "type": "message", "content": "Dossier marqué comme fraude confirmée. Le signalement SIU a été mis à jour." }
+              ]
+            },
+            {
+              "condition": "equals('clos_sans_suite')",
+              "nodes": [
+                {
+                  "id": "n74c",
+                  "type": "action",
+                  "action_id": "action-dataverse-create-sinistre",
+                  "override": { "cr_statut": "clos_sans_suite" }
+                },
+                { "id": "n74d", "type": "message", "content": "Dossier clos sans suite. Transmission au circuit d'indemnisation standard." }
+              ]
+            }
+          ]
+        },
+        { "id": "n75", "type": "end_conversation", "reason": "siu_action_taken" }
+      ]
+    },
+
+    {
+      "id": "topic-fallback-scoring",
+      "name": "Fallback — Erreur Azure ML",
+      "trigger": { "type": "sub_topic" },
+      "nodes": [
+        {
+          "id": "n80",
+          "type": "message",
+          "content": "L'analyse automatique est temporairement indisponible. Votre dossier **{gv_id_sinistre}** est enregistré et transmis manuellement à notre équipe.",
+          "comment": "Fallback conservateur : le dossier est créé en Dataverse avec score_fraude null — traitement manuel par SIU"
+        },
+        {
+          "id": "n81",
+          "type": "action",
+          "action_id": "action-dataverse-create-sinistre",
+          "override": {
+            "cr_score_fraude": null,
+            "cr_statut": "scoring_erreur",
+            "cr_flag_fraude_suspect": true,
+            "comment": "Flag suspect par précaution — un agent SIU traitera manuellement"
+          }
+        },
+        {
+          "id": "n82",
+          "type": "action",
+          "action_id": "action-teams-notif-siu",
+          "comment": "Alerte Teams SIU pour traitement manuel — indique erreur scoring"
+        },
+        {
+          "id": "n83",
+          "type": "message",
+          "content": "Un gestionnaire traitera votre dossier dans les 48h ouvrées. Référence : **{gv_id_sinistre}**."
+        },
+        { "id": "n84", "type": "end_conversation", "reason": "scoring_fallback" }
+      ]
+    },
+
+    {
+      "id": "topic-erreur-police-introuvable",
+      "name": "Erreur — Police non trouvée",
+      "trigger": { "type": "sub_topic" },
+      "nodes": [
+        {
+          "id": "n90",
+          "type": "message",
+          "content": "Je n'ai pas trouvé de contrat actif avec le numéro **{gv_id_police}**. Veuillez vérifier votre numéro de police sur votre carte verte ou votre contrat."
+        },
+        {
+          "id": "n91",
+          "type": "question",
+          "text": "Souhaitez-vous réessayer avec un autre numéro ou être mis en relation avec notre service client ?",
+          "choices": ["Réessayer", "Service client"]
+        },
+        {
+          "id": "n92",
+          "type": "condition",
+          "variable": "Activity.Value",
+          "branches": [
+            { "condition": "equals('Réessayer')",   "nodes": [{ "id": "n92a", "type": "redirect", "target_topic": "topic-saisie-sinistre" }] },
+            { "condition": "equals('Service client')", "nodes": [
+              { "id": "n92b", "type": "message", "content": "Je vous transfère vers notre service client : **0800 XXX XXX** (appel gratuit, lun–ven 8h–18h)." },
+              { "id": "n92c", "type": "end_conversation", "reason": "escalate_human" }
+            ]}
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "topic-gestion-erreurs",
+      "name": "Gestion des erreurs — Fallback général",
+      "trigger": {
+        "type": "system",
+        "events": ["OnError", "OnUnrecognized"],
+        "max_unrecognized_retries": 2
+      },
+      "nodes": [
+        {
+          "id": "n95",
+          "type": "message",
+          "content": "Je n'ai pas pu traiter votre demande. Je vous transfère vers un agent humain."
+        },
+        {
+          "id": "n96",
+          "type": "end_conversation",
+          "reason": "escalate_human",
+          "transfer_to": "siu@assureur-demo.fr"
+        }
+      ]
+    }
+  ],
+
+  "adaptive_cards": {
+    "card-alerte-siu": {
+      "description": "Carte Teams envoyée au canal SIU pour toute alerte score ≥ 30 — contient score, reason codes, lien dossier",
+      "schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+      "version": "1.5",
+      "body": [
+        {
+          "type": "Container",
+          "style": "attention",
+          "items": [
+            { "type": "TextBlock", "text": "🚨 Nouvelle alerte fraude — {gv_categorie_risque}", "weight": "Bolder", "size": "Large" },
+            { "type": "FactSet", "facts": [
+              { "title": "Dossier",       "value": "{gv_id_sinistre}" },
+              { "title": "Police",        "value": "{gv_id_police}" },
+              { "title": "Type",          "value": "{gv_type_sinistre}" },
+              { "title": "Montant",       "value": "{gv_montant_reclame} €" },
+              { "title": "Score fraude",  "value": "{gv_score_fraude} / 100" },
+              { "title": "Score règles",  "value": "{gv_score_regles} / 50" },
+              { "title": "Score ML",      "value": "{gv_score_ml} / 50" },
+              { "title": "IP déclaration","value": "{gv_adresse_ip}" },
+              { "title": "IP sinistres 30j", "value": "{gv_ip_count_30d}" },
+              { "title": "Réparateur 90j",   "value": "{gv_reparateur_count_90d}" }
+            ]},
+            { "type": "TextBlock", "text": "**Reason codes :**", "weight": "Bolder" },
+            { "type": "TextBlock", "text": "{gv_reason_codes}", "wrap": true }
+          ]
+        }
+      ],
+      "actions": [
+        { "type": "Action.OpenUrl", "title": "Ouvrir dans Power BI", "url": "https://app.powerbi.com/groups/fraude-demo/reports/dashboard-siu" },
+        { "type": "Action.OpenUrl", "title": "Voir dans Dataverse",  "url": "https://orgXXXXXXXX.crm.dynamics.com/main.aspx?etn=cr_sinistres&id={gv_id_sinistre}" }
+      ]
+    }
+  },
+
+  "channels": [
+    {
+      "id": "channel-teams",
+      "type": "MicrosoftTeams",
+      "name": "Teams — Agents & Assurés",
+      "app_id": "REMPLACER_PAR_TEAMS_APP_ID",
+      "scopes": ["personal", "groupchat", "team"],
+      "enabled": true
+    },
+    {
+      "id": "channel-webchat",
+      "type": "DirectLine",
+      "name": "Webchat — Portail Assuré",
+      "embed_code": "<script>/* DirectLine embed token récupéré depuis Key Vault */</script>",
+      "authentication": "token_endpoint",
+      "enabled": true
+    }
+  ],
+
+  "_metadata": {
+    "version": "1.0.0",
+    "created": "2026-06-04",
+    "author": "Sébastien Donné — tkoidra.com",
+    "project": "fraud-agent-demo",
+    "agent_position": "Agent 1 / 5",
+    "description": "Agent Copilot Studio orchestrateur — point d'entrée du pipeline de détection fraude & recours. Collecte les données du sinistre, enrichit via Dataverse (_reparateur_count_90d, _ip_count_30d), appelle score_single() sur Azure ML en temps réel, puis route selon le score : STP (< 30), investigation (30–59), alerte SIU (≥ 60).",
+    "pipeline_integration": {
+      "agent_1_this": "Copilot Studio — orchestration, saisie, routing",
+      "agent_2_scoring": "Azure ML — scoring-model.py score_single() — endpoint https://aml-fraude-demo.azureml.azure.com/score",
+      "agent_3_graph": "Azure Synapse — graph-query.sql vw_graph_alerts — déclenché via Power Automate asynchrone",
+      "agent_4_openai": "Azure OpenAI GPT-4o — prompts analyse-rapport-police.md + identification-tiers.md — déclenché si score ≥ 60",
+      "agent_5_recours": "Power Automate — flow-recours.json — déclenché si recours_possible = true dans Dataverse"
+    },
+    "scoring_contract": {
+      "function": "score_single(sinistre: dict, police: dict, model_dir: str) -> dict",
+      "required_sinistre_fields": ["id_sinistre", "id_police", "date_declaration", "type", "montant_reclame", "id_reparateur", "adresse_ip_declaration", "_reparateur_count_90d", "_ip_count_30d"],
+      "required_police_fields": ["id_police", "date_souscription", "franchise", "plafond_garantie", "type_contrat"],
+      "enrichment_fields": {
+        "_reparateur_count_90d": "Nb sinistres vers même id_reparateur sur 90j — requête Dataverse avant appel",
+        "_ip_count_30d": "Nb sinistres depuis même adresse_ip_declaration sur 30j — requête Dataverse avant appel"
+      },
+      "output_fields": ["score_fraude (0-100)", "score_ml (0-50)", "score_regles (0-50)", "categorie_risque (Faible|Moyen|Élevé)", "reason_codes (list)"],
+      "routing_thresholds": {
+        "stp": "score_fraude < 30",
+        "investigation": "30 ≤ score_fraude < 60",
+        "alerte_siu": "score_fraude ≥ 60"
+      }
+    },
+    "topics_summary": {
+      "topic-accueil": "Accueil, capture IP session, redirect vers saisie",
+      "topic-saisie-sinistre": "Collecte interactive : police, type, date, montant, réparateur — validation entités — récap carte adaptative",
+      "topic-enrichissement-scoring": "Requêtes Dataverse _reparateur_count_90d + _ip_count_30d → appel AzureML score_single() → persist Dataverse",
+      "topic-routing-score": "Branch score < 30 → stp | 30–59 → investigation | ≥ 60 → alerte_siu",
+      "topic-stp-faible-risque": "Confirmation assuré — circuit standard — 5j ouvrés",
+      "topic-investigation-moyen": "Demande documents — alerte Synapse asynchrone — notif Teams SIU — 48h ouvrées",
+      "topic-alerte-siu-eleve": "Alerte Synapse + OpenAI asynchrones — notif Teams SIU prioritaire — 24h ouvrées",
+      "topic-affichage-reason-codes-siu": "Consultation dossier par agent SIU (role-gated) — score détaillé — actions confirmer/clore/escalader",
+      "topic-fallback-scoring": "Erreur Azure ML — création sinistre avec statut scoring_erreur — flag suspect — notif manuelle SIU",
+      "topic-erreur-police-introuvable": "Police inconnue — retry ou transfert service client",
+      "topic-gestion-erreurs": "Fallback général OnError/OnUnrecognized — transfert humain"
+    },
+    "prerequisites": [
+      "App Copilot Studio créée dans l'environnement fraude-agent-demo (Power Platform)",
+      "Authentification Azure AD configurée avec app registration (client_id, tenant_id)",
+      "Connexion Dataverse liée (cr_sinistres, cr_polices — droits Read/Write)",
+      "Azure ML managed online endpoint déployé : https://aml-fraude-demo.azureml.azure.com/score (deployment: fraud-scoring-v1)",
+      "Managed Identity du bot avec rôle AzureML Data Scientist sur le workspace ML",
+      "Flow Power Automate flow-synapse-graph-analysis créé et publié (Agent 3)",
+      "Flow Power Automate flow-openai-rapport-police créé et publié (Agent 4)",
+      "Canal Teams configuré avec App ID enregistré dans Azure AD",
+      "Canal Webchat DirectLine token endpoint sécurisé (jamais de secret hardcodé côté client)"
+    ]
+  }
+}
