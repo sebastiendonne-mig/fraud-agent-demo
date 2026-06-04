@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Détection Fraude — Démo Pipeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --azure: #0078d4;
+      --azure-dark: #004578;
+      --azure-light: #deecf9;
+      --green: #107c10;
+      --green-light: #dff6dd;
+      --orange: #ca5010;
+      --orange-light: #fff4ce;
+      --red: #d13438;
+      --red-light: #fde7e9;
+      --neutral-10: #f3f2f1;
+      --neutral-20: #edebe9;
+      --neutral-60: #605e5c;
+      --neutral-80: #323130;
+      --neutral-100: #201f1e;
+      --white: #ffffff;
+      --radius: 6px;
+      --shadow: 0 2px 8px rgba(0,0,0,.12);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,.16);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--neutral-10);
+      color: var(--neutral-100);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--azure-dark);
+      color: var(--white);
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.3);
+    }
+    header .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -.2px;
+    }
+    header .logo svg { flex-shrink: 0; }
+    header .subtitle {
+      font-size: 13px;
+      opacity: .7;
+      margin-left: auto;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .pipeline-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--azure-light);
+      color: var(--azure-dark);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--neutral-100);
+      margin-bottom: 6px;
+    }
+    .page-description {
+      font-size: 14px;
+      color: var(--neutral-60);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    /* ── API Key banner ── */
+    .api-key-section {
+      background: var(--white);
+      border: 1px solid var(--neutral-20);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .api-key-section label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--neutral-80);
+      white-space: nowrap;
+    }
+    .api-key-section input {
+      flex: 1;
+      min-width: 240px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      padding: 6px 10px;
+      border: 1px solid #c8c6c4;
+      border-radius: var(--radius);
+      background: var(--neutral-10);
+      color: var(--neutral-80);
+    }
+    .api-key-section input:focus {
+      outline: none;
+      border-color: var(--azure);
+      box-shadow: 0 0 0 2px rgba(0,120,212,.15);
+    }
+    .api-key-notice {
+      font-size: 11px;
+      color: var(--neutral-60);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--neutral-20);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .card h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--neutral-80);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card h2 .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      background: var(--azure);
+      color: var(--white);
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ── Form ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--neutral-60);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    .form-group input,
+    .form-group select {
+      padding: 8px 10px;
+      border: 1px solid #c8c6c4;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--neutral-80);
+      background: var(--white);
+      transition: border-color .15s;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--azure);
+      box-shadow: 0 0 0 2px rgba(0,120,212,.15);
+    }
+    .form-group .hint {
+      font-size: 11px;
+      color: var(--neutral-60);
+    }
+
+    .enrichment-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 14px 16px;
+      background: var(--azure-light);
+      border-radius: var(--radius);
+      border: 1px dashed #91c0e4;
+      margin-top: 4px;
+    }
+    .enrichment-row .enrichment-label {
+      grid-column: 1 / -1;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--azure-dark);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    /* ── Bouton principal ── */
+    .btn-primary {
+      background: var(--azure);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background .15s, transform .1s;
+    }
+    .btn-primary:hover:not(:disabled) { background: #106ebe; }
+    .btn-primary:active:not(:disabled) { transform: scale(.98); }
+    .btn-primary:disabled { background: #c8c6c4; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--azure);
+      border: 1px solid var(--azure);
+      border-radius: var(--radius);
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-secondary:hover { background: var(--azure-light); }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Pipeline stepper ── */
+    .pipeline-steps {
+      display: flex;
+      gap: 0;
+      margin-bottom: 24px;
+      overflow-x: auto;
+    }
+    .pipeline-step {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 100px;
+    }
+    .pipeline-step .step-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 8px;
+      flex: 1;
+      text-align: center;
+    }
+    .pipeline-step .step-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--neutral-20);
+      border: 2px solid #c8c6c4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all .3s;
+      position: relative;
+    }
+    .pipeline-step .step-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #a19f9d;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      line-height: 1.3;
+    }
+    .pipeline-step .connector {
+      width: 32px;
+      height: 2px;
+      background: var(--neutral-20);
+      flex-shrink: 0;
+      transition: background .3s;
+    }
+    .pipeline-step.active .step-icon {
+      background: var(--azure-light);
+      border-color: var(--azure);
+    }
+    .pipeline-step.active .step-label { color: var(--azure); }
+    .pipeline-step.done .step-icon {
+      background: var(--green-light);
+      border-color: var(--green);
+    }
+    .pipeline-step.done .step-label { color: var(--green); }
+    .pipeline-step.done + .pipeline-step .connector { background: var(--azure); }
+    .pipeline-step.skipped .step-icon {
+      background: var(--neutral-20);
+      border-color: #c8c6c4;
+      opacity: .5;
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: var(--white);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    .spinner.dark {
+      border-color: rgba(0,120,212,.25);
+      border-top-color: var(--azure);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Score gauge ── */
+    .score-section {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .gauge-wrap {
+      position: relative;
+      width: 140px;
+      height: 80px;
+      flex-shrink: 0;
+    }
+    .gauge-wrap svg { overflow: visible; }
+    .gauge-value {
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--neutral-100);
+      letter-spacing: -1px;
+    }
+    .gauge-label {
+      position: absolute;
+      bottom: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--neutral-60);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      white-space: nowrap;
+    }
+
+    .score-meta { flex: 1; min-width: 200px; }
+    .category-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .2px;
+      margin-bottom: 12px;
+    }
+    .category-badge.stp { background: var(--green-light); color: var(--green); }
+    .category-badge.investigation { background: var(--orange-light); color: var(--orange); }
+    .category-badge.alerte { background: var(--red-light); color: var(--red); }
+
+    .score-detail {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .score-detail-item {
+      background: var(--neutral-10);
+      border-radius: 4px;
+      padding: 8px 12px;
+    }
+    .score-detail-item .sdi-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--neutral-60);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    .score-detail-item .sdi-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--neutral-80);
+    }
+
+    /* ── Reason codes ── */
+    .reason-codes { display: flex; flex-direction: column; gap: 8px; }
+    .rc-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--neutral-10);
+      border-radius: var(--radius);
+      border-left: 3px solid var(--azure);
+    }
+    .rc-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .rc-text { font-size: 13px; color: var(--neutral-80); line-height: 1.4; }
+
+    /* ── Recours dossier ── */
+    .recours-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, var(--azure-dark), var(--azure));
+      border-radius: var(--radius);
+      color: var(--white);
+      margin-bottom: 16px;
+    }
+    .recours-header .recours-icon { font-size: 28px; }
+    .recours-header h3 { font-size: 15px; font-weight: 700; }
+    .recours-header .montant {
+      margin-left: auto;
+      text-align: right;
+    }
+    .recours-header .montant .amount {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .recours-header .montant .amount-label {
+      font-size: 10px;
+      opacity: .8;
+      text-transform: uppercase;
+    }
+
+    .recours-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 500px) { .recours-fields { grid-template-columns: 1fr; } }
+
+    .recours-field {
+      background: var(--neutral-10);
+      border-radius: 4px;
+      padding: 10px 14px;
+    }
+    .recours-field .rf-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--neutral-60);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 2px;
+    }
+    .recours-field .rf-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--neutral-80);
+    }
+    .recours-field.full { grid-column: 1 / -1; }
+
+    .certitude-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .certitude-badge.Élevé { background: var(--green-light); color: var(--green); }
+    .certitude-badge.Moyen { background: var(--orange-light); color: var(--orange); }
+    .certitude-badge.Faible { background: var(--red-light); color: var(--red); }
+
+    .actions-timeline { border-top: 1px solid var(--neutral-20); padding-top: 14px; }
+    .actions-timeline h4 {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--neutral-60);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 10px;
+    }
+    .timeline { display: flex; flex-direction: column; gap: 8px; }
+    .timeline-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .timeline-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--azure);
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+    .timeline-item .ti-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--azure);
+      white-space: nowrap;
+    }
+    .timeline-item .ti-text {
+      font-size: 12px;
+      color: var(--neutral-80);
+      line-height: 1.4;
+    }
+
+    /* ── States ── */
+    .hidden { display: none !important; }
+
+    .error-banner {
+      background: var(--red-light);
+      border: 1px solid #f4abab;
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--red);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .stp-banner {
+      background: var(--green-light);
+      border: 1px solid #9fd89f;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      font-size: 14px;
+      color: var(--green);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-bar {
+      font-size: 12px;
+      color: var(--neutral-60);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 0;
+    }
+
+    /* ── Demo quickfill ── */
+    .demo-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .demo-chip {
+      padding: 3px 10px;
+      border: 1px solid var(--azure);
+      border-radius: 14px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--azure);
+      background: transparent;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .15s;
+    }
+    .demo-chip:hover { background: var(--azure-light); }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: #a19f9d;
+      border-top: 1px solid var(--neutral-20);
+      margin-top: 16px;
+    }
+    footer a { color: var(--azure); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="13" height="13" fill="#f25022"/>
+      <rect x="15" width="13" height="13" fill="#7fba00"/>
+      <rect y="15" width="13" height="13" fill="#00a4ef"/>
+      <rect x="15" y="15" width="13" height="13" fill="#ffb900"/>
+    </svg>
+    Agent Fraude &amp; Recours
+  </div>
+  <span class="subtitle">Démo pipeline agentique · IARD France · Powered by Claude</span>
+</header>
+
+<div class="container">
+
+  <div class="pipeline-badge">
+    <span>⚡</span> Pipeline agentique 5 étages
+  </div>
+
+  <h1>Simulation du pipeline de détection fraude</h1>
+  <p class="page-description">
+    Saisissez un sinistre pour simuler le passage complet dans le pipeline :<br/>
+    scoring ML hybride · analyse réseau · lecture sémantique · génération dossier de recours.
+  </p>
+
+  <!-- API Key -->
+  <div class="api-key-section">
+    <label>🔑 Clé Anthropic API</label>
+    <input type="password" id="apiKey" placeholder="sk-ant-…" autocomplete="off" />
+    <span class="api-key-notice">🔒 Stockée uniquement en mémoire — jamais envoyée ailleurs</span>
+  </div>
+
+  <!-- Pipeline stepper -->
+  <div class="pipeline-steps" id="pipelineSteps">
+    <div class="pipeline-step" id="step-scoring">
+      <div class="step-inner">
+        <div class="step-icon">🤖</div>
+        <div class="step-label">Azure ML<br/>Scoring</div>
+      </div>
+      <div class="connector"></div>
+    </div>
+    <div class="pipeline-step" id="step-synapse">
+      <div class="step-inner">
+        <div class="step-icon">🕸️</div>
+        <div class="step-label">Synapse<br/>Graphe</div>
+      </div>
+      <div class="connector"></div>
+    </div>
+    <div class="pipeline-step" id="step-police">
+      <div class="step-inner">
+        <div class="step-icon">📄</div>
+        <div class="step-label">OpenAI<br/>Rapport</div>
+      </div>
+      <div class="connector"></div>
+    </div>
+    <div class="pipeline-step" id="step-recours">
+      <div class="step-inner">
+        <div class="step-icon">⚖️</div>
+        <div class="step-label">Power Automate<br/>Recours</div>
+      </div>
+      <div class="connector" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Formulaire sinistre -->
+  <div class="card" id="formCard">
+    <h2><span class="step-badge">1</span> Déclaration de sinistre</h2>
+
+    <div class="demo-chips">
+      <span style="font-size:11px;color:var(--neutral-60);align-self:center;">Scénarios démo :</span>
+      <button class="demo-chip" onclick="fillDemo('stp')">✅ STP — score faible</button>
+      <button class="demo-chip" onclick="fillDemo('reseau')">🕸️ Réseau REP-007</button>
+      <button class="demo-chip" onclick="fillDemo('precoce')">⏰ Déclaration précoce</button>
+      <button class="demo-chip" onclick="fillDemo('recours')">⚖️ Recours + rapport police</button>
+    </div>
+
+    <form id="sinistreForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Numéro de police</label>
+          <input type="text" id="id_police" value="POL-78234" required />
+        </div>
+        <div class="form-group">
+          <label>Type de sinistre</label>
+          <select id="type_sinistre" required>
+            <option value="degat_des_eaux">Dégât des eaux</option>
+            <option value="bris_de_glace">Bris de glace</option>
+            <option value="accident_auto" selected>Accident auto</option>
+            <option value="incendie">Incendie</option>
+            <option value="vol">Vol</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Montant réclamé (€)</label>
+          <input type="number" id="montant_reclame" value="4200" min="0" max="500000" required />
+        </div>
+        <div class="form-group">
+          <label>Montant plafond police (€)</label>
+          <input type="number" id="montant_plafond" value="15000" min="0" max="500000" required />
+        </div>
+        <div class="form-group">
+          <label>Franchise (€)</label>
+          <input type="number" id="franchise" value="500" min="0" max="5000" />
+        </div>
+        <div class="form-group">
+          <label>Date de déclaration</label>
+          <input type="date" id="date_declaration" required />
+        </div>
+        <div class="form-group">
+          <label>Date de souscription</label>
+          <input type="date" id="date_souscription" required />
+        </div>
+        <div class="form-group">
+          <label>Réparateur (optionnel)</label>
+          <input type="text" id="id_reparateur" placeholder="ex : REP-007" />
+        </div>
+
+        <div class="form-group full">
+          <div class="enrichment-row">
+            <span class="enrichment-label">📊 Données enrichissement Dataverse (pré-calculées)</span>
+            <div class="form-group">
+              <label>Nb sinistres / même réparateur (90j)</label>
+              <input type="number" id="reparateur_count_90d" value="2" min="0" max="50" />
+              <span class="hint">Simulez REP-007 : mettre 8+</span>
+            </div>
+            <div class="form-group">
+              <label>Nb déclarations / même IP (30j)</label>
+              <input type="number" id="ip_count_30d" value="1" min="0" max="50" />
+              <span class="hint">Simulez anneau IP : mettre 3+</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label>Rapport de police (texte — optionnel, requis pour recours)</label>
+          <textarea id="rapport_police" rows="4"
+            style="padding:8px 10px;border:1px solid #c8c6c4;border-radius:var(--radius);font-size:13px;font-family:inherit;resize:vertical;width:100%;"
+            placeholder="Collez ici le PV de police pour activer l'analyse recours…"></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" id="submitBtn">
+          <span id="submitIcon">▶</span>
+          <span id="submitLabel">Analyser ce sinistre</span>
+        </button>
+        <button type="button" class="btn-secondary" onclick="resetForm()">Réinitialiser</button>
+        <span class="status-bar hidden" id="statusBar">
+          <span class="spinner dark"></span>
+          <span id="statusText">Initialisation…</span>
+        </span>
+      </div>
+    </form>
+  </div>
+
+  <!-- Résultats scoring -->
+  <div class="card hidden" id="resultScoring">
+    <h2><span class="step-badge">2</span> Score fraude — Azure ML</h2>
+    <div id="errorBanner" class="error-banner hidden">
+      <span>⚠️</span>
+      <span id="errorText"></span>
+    </div>
+
+    <div class="score-section" id="scoreDisplay">
+      <div class="gauge-wrap">
+        <svg width="140" height="80" viewBox="0 0 140 80">
+          <path d="M 10 75 A 60 60 0 0 1 130 75" fill="none" stroke="#edebe9" stroke-width="10" stroke-linecap="round"/>
+          <path id="gaugeFill" d="M 10 75 A 60 60 0 0 1 130 75" fill="none" stroke="#c8c6c4" stroke-width="10" stroke-linecap="round"
+            stroke-dasharray="188.5" stroke-dashoffset="188.5" style="transition: stroke-dashoffset 1s ease, stroke .5s;"/>
+        </svg>
+        <div class="gauge-value" id="gaugeValue">—</div>
+        <div class="gauge-label">/ 100</div>
+      </div>
+      <div class="score-meta">
+        <div class="category-badge" id="categoryBadge">—</div>
+        <div class="score-detail">
+          <div class="score-detail-item">
+            <div class="sdi-label">Score règles</div>
+            <div class="sdi-value" id="scoreRegles">—</div>
+          </div>
+          <div class="score-detail-item">
+            <div class="sdi-label">Score ML</div>
+            <div class="sdi-value" id="scoreMl">—</div>
+          </div>
+          <div class="score-detail-item">
+            <div class="sdi-label">Catégorie</div>
+            <div class="sdi-value" id="categorie" style="font-size:13px">—</div>
+          </div>
+          <div class="score-detail-item">
+            <div class="sdi-label">Routing</div>
+            <div class="sdi-value" id="routing" style="font-size:12px">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stp-banner hidden" id="stpBanner">
+      ✅ Dossier traité en <strong>Straight-Through Processing</strong> — aucune intervention humaine requise. Clôturé automatiquement.
+    </div>
+  </div>
+
+  <!-- Reason codes -->
+  <div class="card hidden" id="resultReasonCodes">
+    <h2><span class="step-badge">3</span> Reason Codes — Analyse réseau</h2>
+    <div class="reason-codes" id="reasonCodesList"></div>
+  </div>
+
+  <!-- Recours -->
+  <div class="card hidden" id="resultRecours">
+    <h2><span class="step-badge">4</span> Dossier de recours — Power Automate</h2>
+
+    <div class="recours-header">
+      <div class="recours-icon">⚖️</div>
+      <div>
+        <h3>Dossier subrogation L121-12 C.ass.</h3>
+        <div style="font-size:12px;opacity:.8;margin-top:2px;" id="recoursId">—</div>
+      </div>
+      <div class="montant">
+        <div class="amount" id="montantRecouperable">—</div>
+        <div class="amount-label">Montant récupérable</div>
+      </div>
+    </div>
+
+    <div class="recours-fields" id="recoursMeta"></div>
+
+    <div class="actions-timeline">
+      <h4>Plan d'actions automatiques</h4>
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Démo portfolio · <a href="https://tkoidra.com" target="_blank">tkoidra.com</a> ·
+  Sébastien Donné — Consultant IA agentique &amp; Power Platform · Données entièrement fictives
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
