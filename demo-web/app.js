@@ -160,7 +160,10 @@ async function callClaude({ apiKey, system, userMsg }) {
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `HTTP ${response.status}`);
+    const msg = err?.error?.message || `HTTP ${response.status}`;
+    const error = new Error(msg);
+    error.status = response.status;
+    throw error;
   }
   const data = await response.json();
   // Extraire le texte (ignorer les blocs thinking)
@@ -495,7 +498,8 @@ document.getElementById("sinistreForm").addEventListener("submit", async (e) => 
     hide("statusBar");
   } catch (err) {
     setStep("step-scoring", "");
-    showError("Erreur : " + err.message);
+    const prefix = err.status === 429 ? "⏱️" : "⚠️";
+    showError(`${prefix} ${err.message}`);
     hide("statusBar");
   } finally {
     document.getElementById("submitBtn").disabled = false;
