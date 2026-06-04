@@ -18,11 +18,11 @@ pour les assureurs IARD français
 [![Dataverse](https://img.shields.io/badge/Microsoft-Dataverse-004578?style=flat-square&logo=microsoftdynamics365&logoColor=white)](https://powerplatform.microsoft.com/fr-fr/dataverse/)
 [![Mermaid](https://img.shields.io/badge/Diagrams-Mermaid-FF3670?style=flat-square&logo=mermaid&logoColor=white)](https://mermaid.js.org)
 [![License](https://img.shields.io/badge/License-MIT-107C10?style=flat-square)](LICENSE)
-[![Demo Live](https://img.shields.io/badge/Demo-Live%20sur%20Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://demo-web-mu-two.vercel.app)
+[![Demo Live](https://img.shields.io/badge/Demo-fraud.tkoidra.com-000000?style=flat-square&logo=vercel&logoColor=white)](https://fraud.tkoidra.com)
 
 <br/>
 
-**[→ Démo interactive du pipeline](https://demo-web-mu-two.vercel.app)**
+**[→ Démo interactive du pipeline](https://fraud.tkoidra.com)**
 
 <br/>
 
