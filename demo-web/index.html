@@ -3,69 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agent Détection Fraude — Démo Pipeline</title>
+  <title>Fraud Agent Demo · TKoidra</title>
+  <meta name="description" content="Démonstration d'un pipeline agentique de détection de fraude assurance IARD : scoring ML hybride, analyse réseau, lecture sémantique de rapports de police et génération automatique de dossiers de recours." />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/tokens.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --azure: #0078d4;
-      --azure-dark: #004578;
-      --azure-light: #deecf9;
-      --green: #107c10;
-      --green-light: #dff6dd;
-      --orange: #ca5010;
+      /* Remapping vers la charte TKoidra */
+      --azure:       var(--tk-cyan);
+      --azure-dark:  var(--tk-navy);
+      --azure-light: var(--tk-gray-100);
+
+      /* Couleurs fonctionnelles (indicateurs de statut fraude) */
+      --green:        #107c10;
+      --green-light:  #dff6dd;
+      --orange:       #ca5010;
       --orange-light: #fff4ce;
-      --red: #d13438;
-      --red-light: #fde7e9;
-      --neutral-10: #f3f2f1;
-      --neutral-20: #edebe9;
-      --neutral-60: #605e5c;
-      --neutral-80: #323130;
-      --neutral-100: #201f1e;
-      --white: #ffffff;
-      --radius: 6px;
-      --shadow: 0 2px 8px rgba(0,0,0,.12);
-      --shadow-lg: 0 4px 20px rgba(0,0,0,.16);
+      --red:          #d13438;
+      --red-light:    #fde7e9;
+
+      /* Neutrals */
+      --neutral-10:  var(--tk-gray-50);
+      --neutral-20:  var(--tk-gray-200);
+      --neutral-60:  var(--tk-gray-600);
+      --neutral-80:  var(--tk-gray-900);
+      --neutral-100: var(--tk-gray-900);
+      --white:       var(--tk-white);
+
+      --radius:    var(--tk-radius-md);
+      --shadow:    var(--tk-shadow-sm);
+      --shadow-lg: var(--tk-shadow-md);
     }
 
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: var(--tk-font-sans);
       background: var(--neutral-10);
       color: var(--neutral-100);
       min-height: 100vh;
     }
 
-    /* ── Header ── */
-    header {
-      background: var(--azure-dark);
-      color: var(--white);
-      padding: 0 32px;
-      height: 56px;
+    /* ── Header TKoidra ── */
+    .tk-header {
+      background: var(--tk-white);
+      border-bottom: 1px solid var(--tk-gray-200);
+      height: var(--tk-header-height);
+      position: sticky;
+      top: 0;
+      z-index: 50;
       display: flex;
       align-items: center;
-      gap: 16px;
-      box-shadow: 0 2px 4px rgba(0,0,0,.3);
+      padding: 0 var(--tk-space-6);
     }
-    header .logo {
+    .tk-header-inner {
+      max-width: var(--tk-container-max);
+      margin: 0 auto;
+      width: 100%;
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: -.2px;
+      gap: var(--tk-space-6);
     }
-    header .logo svg { flex-shrink: 0; }
-    header .subtitle {
-      font-size: 13px;
-      opacity: .7;
+    .tk-back-link {
+      font-size: var(--tk-text-sm);
+      font-weight: var(--tk-weight-medium);
+      color: var(--tk-gray-600);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: color 0.15s;
+    }
+    .tk-back-link:hover { color: var(--tk-navy); }
+    .tk-logo-link {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .tk-app-name {
+      font-size: var(--tk-text-sm);
+      font-weight: var(--tk-weight-medium);
+      color: var(--tk-gray-600);
       margin-left: auto;
     }
 
     /* ── Layout ── */
     .container {
-      max-width: 960px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 32px 24px;
     }
@@ -86,13 +110,13 @@
     }
 
     h1 {
-      font-size: 26px;
-      font-weight: 700;
-      color: var(--neutral-100);
+      font-size: var(--tk-text-3xl);
+      font-weight: var(--tk-weight-semibold);
+      color: var(--tk-navy);
       margin-bottom: 6px;
     }
     .page-description {
-      font-size: 14px;
+      font-size: var(--tk-text-sm);
       color: var(--neutral-60);
       margin-bottom: 28px;
       line-height: 1.5;
@@ -119,10 +143,10 @@
     .api-key-section input {
       flex: 1;
       min-width: 240px;
-      font-family: 'Courier New', monospace;
+      font-family: var(--tk-font-mono);
       font-size: 13px;
       padding: 6px 10px;
-      border: 1px solid #c8c6c4;
+      border: 1px solid var(--neutral-20);
       border-radius: var(--radius);
       background: var(--neutral-10);
       color: var(--neutral-80);
@@ -130,7 +154,7 @@
     .api-key-section input:focus {
       outline: none;
       border-color: var(--azure);
-      box-shadow: 0 0 0 2px rgba(0,120,212,.15);
+      box-shadow: 0 0 0 2px rgba(0, 180, 216, .15);
     }
     .api-key-notice {
       font-size: 11px;
@@ -144,14 +168,14 @@
     .card {
       background: var(--white);
       border: 1px solid var(--neutral-20);
-      border-radius: var(--radius);
-      padding: 24px;
+      border-radius: var(--tk-radius-lg);
+      padding: var(--tk-space-6);
       margin-bottom: 20px;
       box-shadow: var(--shadow);
     }
     .card h2 {
-      font-size: 16px;
-      font-weight: 600;
+      font-size: var(--tk-text-base);
+      font-weight: var(--tk-weight-semibold);
       color: var(--neutral-80);
       margin-bottom: 18px;
       display: flex;
@@ -164,7 +188,7 @@
       justify-content: center;
       width: 22px;
       height: 22px;
-      background: var(--azure);
+      background: var(--tk-navy);
       color: var(--white);
       border-radius: 50%;
       font-size: 11px;
@@ -196,7 +220,7 @@
     .form-group input,
     .form-group select {
       padding: 8px 10px;
-      border: 1px solid #c8c6c4;
+      border: 1px solid var(--neutral-20);
       border-radius: var(--radius);
       font-size: 14px;
       font-family: inherit;
@@ -208,7 +232,7 @@
     .form-group select:focus {
       outline: none;
       border-color: var(--azure);
-      box-shadow: 0 0 0 2px rgba(0,120,212,.15);
+      box-shadow: 0 0 0 2px rgba(0, 180, 216, .15);
     }
     .form-group .hint {
       font-size: 11px;
@@ -222,7 +246,7 @@
       padding: 14px 16px;
       background: var(--azure-light);
       border-radius: var(--radius);
-      border: 1px dashed #91c0e4;
+      border: 1px dashed var(--tk-gray-400);
       margin-top: 4px;
     }
     .enrichment-row .enrichment-label {
@@ -234,15 +258,15 @@
       letter-spacing: .5px;
     }
 
-    /* ── Bouton principal ── */
+    /* ── Boutons ── */
     .btn-primary {
-      background: var(--azure);
+      background: var(--tk-navy);
       color: var(--white);
       border: none;
       border-radius: var(--radius);
       padding: 10px 24px;
       font-size: 14px;
-      font-weight: 600;
+      font-weight: var(--tk-weight-semibold);
       font-family: inherit;
       cursor: pointer;
       display: inline-flex;
@@ -250,23 +274,23 @@
       gap: 8px;
       transition: background .15s, transform .1s;
     }
-    .btn-primary:hover:not(:disabled) { background: #106ebe; }
+    .btn-primary:hover:not(:disabled) { background: var(--tk-navy-light); }
     .btn-primary:active:not(:disabled) { transform: scale(.98); }
-    .btn-primary:disabled { background: #c8c6c4; cursor: not-allowed; }
+    .btn-primary:disabled { background: var(--neutral-20); cursor: not-allowed; }
 
     .btn-secondary {
       background: transparent;
-      color: var(--azure);
-      border: 1px solid var(--azure);
+      color: var(--tk-navy);
+      border: 1px solid var(--tk-navy);
       border-radius: var(--radius);
       padding: 8px 16px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: var(--tk-weight-semibold);
       font-family: inherit;
       cursor: pointer;
       transition: background .15s;
     }
-    .btn-secondary:hover { background: var(--azure-light); }
+    .btn-secondary:hover { background: var(--neutral-10); }
 
     .form-actions {
       display: flex;
@@ -303,7 +327,7 @@
       height: 36px;
       border-radius: 50%;
       background: var(--neutral-20);
-      border: 2px solid #c8c6c4;
+      border: 2px solid var(--tk-gray-400);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -314,7 +338,7 @@
     .pipeline-step .step-label {
       font-size: 10px;
       font-weight: 600;
-      color: #a19f9d;
+      color: var(--tk-gray-400);
       text-transform: uppercase;
       letter-spacing: .4px;
       line-height: 1.3;
@@ -339,7 +363,7 @@
     .pipeline-step.done + .pipeline-step .connector { background: var(--azure); }
     .pipeline-step.skipped .step-icon {
       background: var(--neutral-20);
-      border-color: #c8c6c4;
+      border-color: var(--tk-gray-400);
       opacity: .5;
     }
 
@@ -354,7 +378,7 @@
       animation: spin .7s linear infinite;
     }
     .spinner.dark {
-      border-color: rgba(0,120,212,.25);
+      border-color: rgba(0, 180, 216, .25);
       border-top-color: var(--azure);
     }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -419,7 +443,7 @@
     }
     .score-detail-item {
       background: var(--neutral-10);
-      border-radius: 4px;
+      border-radius: var(--tk-radius-sm);
       padding: 8px 12px;
     }
     .score-detail-item .sdi-label {
@@ -455,7 +479,7 @@
       align-items: center;
       gap: 12px;
       padding: 14px 18px;
-      background: linear-gradient(135deg, var(--azure-dark), var(--azure));
+      background: var(--tk-navy);
       border-radius: var(--radius);
       color: var(--white);
       margin-bottom: 16px;
@@ -486,7 +510,7 @@
 
     .recours-field {
       background: var(--neutral-10);
-      border-radius: 4px;
+      border-radius: var(--tk-radius-sm);
       padding: 10px 14px;
     }
     .recours-field .rf-label {
@@ -536,7 +560,7 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--azure);
+      background: var(--tk-cyan);
       margin-top: 5px;
       flex-shrink: 0;
     }
@@ -599,42 +623,65 @@
     }
     .demo-chip {
       padding: 3px 10px;
-      border: 1px solid var(--azure);
+      border: 1px solid var(--tk-navy);
       border-radius: 14px;
       font-size: 11px;
       font-weight: 600;
-      color: var(--azure);
+      color: var(--tk-navy);
       background: transparent;
       cursor: pointer;
       font-family: inherit;
       transition: background .15s;
     }
-    .demo-chip:hover { background: var(--azure-light); }
+    .demo-chip:hover { background: var(--neutral-10); }
 
-    footer {
-      text-align: center;
-      padding: 24px;
-      font-size: 12px;
-      color: #a19f9d;
-      border-top: 1px solid var(--neutral-20);
-      margin-top: 16px;
+    /* ── Footer TKoidra ── */
+    .tk-footer {
+      background: var(--tk-navy);
+      color: var(--tk-white);
+      margin-top: var(--tk-space-8);
+      padding: var(--tk-space-8) var(--tk-space-6);
     }
-    footer a { color: var(--azure); text-decoration: none; }
+    .tk-footer-inner {
+      max-width: var(--tk-container-max);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--tk-space-4);
+      text-align: center;
+    }
+    .tk-footer-links {
+      display: flex;
+      gap: var(--tk-space-6);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .tk-footer-links a,
+    .tk-footer a {
+      color: var(--tk-cyan);
+      text-decoration: none;
+      font-size: var(--tk-text-sm);
+      transition: color 0.15s;
+    }
+    .tk-footer-links a:hover,
+    .tk-footer a:hover { color: var(--tk-cyan-light); }
+    .tk-footer-copy {
+      font-size: var(--tk-text-xs);
+      color: var(--tk-gray-400);
+    }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="13" height="13" fill="#f25022"/>
-      <rect x="15" width="13" height="13" fill="#7fba00"/>
-      <rect y="15" width="13" height="13" fill="#00a4ef"/>
-      <rect x="15" y="15" width="13" height="13" fill="#ffb900"/>
-    </svg>
-    Agent Fraude &amp; Recours
+<header class="tk-header">
+  <div class="tk-header-inner">
+    <a href="https://tkoidra.com" class="tk-back-link">← Portfolio</a>
+    <a href="/" class="tk-logo-link">
+      <img src="assets/logo-horizontal.svg" height="32" alt="TKoidra" />
+    </a>
+    <span class="tk-app-name">Fraud Agent Demo</span>
   </div>
-  <span class="subtitle">Démo pipeline agentique · IARD France · Powered by Claude</span>
 </header>
 
 <div class="container">
@@ -764,7 +811,7 @@
         <div class="form-group full">
           <label>Rapport de police (texte — optionnel, requis pour recours)</label>
           <textarea id="rapport_police" rows="4"
-            style="padding:8px 10px;border:1px solid #c8c6c4;border-radius:var(--radius);font-size:13px;font-family:inherit;resize:vertical;width:100%;"
+            style="padding:8px 10px;border:1px solid var(--neutral-20);border-radius:var(--radius);font-size:13px;font-family:inherit;resize:vertical;width:100%;"
             placeholder="Collez ici le PV de police pour activer l'analyse recours…"></textarea>
         </div>
       </div>
@@ -861,9 +908,15 @@
 
 </div>
 
-<footer>
-  Démo portfolio · <a href="https://tkoidra.com" target="_blank">tkoidra.com</a> ·
-  Sébastien Donné — Consultant IA agentique &amp; Power Platform · Données entièrement fictives
+<footer class="tk-footer">
+  <div class="tk-footer-inner">
+    <img src="assets/logo-horizontal-white.svg" height="24" alt="TKoidra" />
+    <div class="tk-footer-links">
+      <a href="https://tkoidra.com">Portfolio</a>
+      <a href="https://www.linkedin.com/in/sebastiendonne" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+    <p class="tk-footer-copy">© 2026 TKoidra · Sébastien Donné — Consultant IA agentique &amp; Power Platform · Données entièrement fictives</p>
+  </div>
 </footer>
 
 <script src="app.js"></script>

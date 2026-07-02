@@ -1,0 +1,80 @@
+/* ============================================
+   TKoidra Design Tokens — v1.0.0
+   Source de vérité pour toutes les apps
+   Modifier ici, propager via Claude Code
+   ============================================ */
+
+:root {
+
+  /* --- Palette de marque --- */
+  --tk-navy:        #0D1F40;
+  --tk-navy-light:  #1A3260;
+  --tk-cyan:        #00B4D8;
+  --tk-cyan-light:  #38C4E0;
+  --tk-white:       #FFFFFF;
+
+  /* --- Palette neutre --- */
+  --tk-gray-50:     #F8FAFC;
+  --tk-gray-100:    #F1F5F9;
+  --tk-gray-200:    #E2E8F0;
+  --tk-gray-400:    #94A3B8;
+  --tk-gray-600:    #475569;
+  --tk-gray-900:    #0F172A;
+
+  /* --- Tokens sémantiques --- */
+  --tk-color-primary:       var(--tk-navy);
+  --tk-color-primary-hover: var(--tk-navy-light);
+  --tk-color-accent:        var(--tk-cyan);
+  --tk-color-accent-hover:  var(--tk-cyan-light);
+
+  --tk-color-bg:            var(--tk-white);
+  --tk-color-surface:       var(--tk-gray-50);
+  --tk-color-border:        var(--tk-gray-200);
+  --tk-color-border-strong: var(--tk-gray-400);
+
+  --tk-color-text:          var(--tk-gray-900);
+  --tk-color-text-muted:    var(--tk-gray-600);
+  --tk-color-text-subtle:   var(--tk-gray-400);
+
+  /* --- Typographie --- */
+  --tk-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --tk-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --tk-text-xs:   0.75rem;    /* 12px */
+  --tk-text-sm:   0.875rem;   /* 14px */
+  --tk-text-base: 1rem;       /* 16px */
+  --tk-text-lg:   1.125rem;   /* 18px */
+  --tk-text-xl:   1.25rem;    /* 20px */
+  --tk-text-2xl:  1.5rem;     /* 24px */
+  --tk-text-3xl:  1.875rem;   /* 30px */
+
+  --tk-weight-regular:   400;
+  --tk-weight-medium:    500;
+  --tk-weight-semibold:  600;
+
+  /* --- Espacement --- */
+  --tk-space-1:   0.25rem;
+  --tk-space-2:   0.5rem;
+  --tk-space-3:   0.75rem;
+  --tk-space-4:   1rem;
+  --tk-space-6:   1.5rem;
+  --tk-space-8:   2rem;
+  --tk-space-12:  3rem;
+  --tk-space-16:  4rem;
+
+  /* --- Border radius --- */
+  --tk-radius-sm:   4px;
+  --tk-radius-md:   8px;
+  --tk-radius-lg:   12px;
+  --tk-radius-xl:   16px;
+  --tk-radius-full: 9999px;
+
+  /* --- Ombres --- */
+  --tk-shadow-sm: 0 1px 3px rgba(13, 31, 64, 0.08);
+  --tk-shadow-md: 0 4px 12px rgba(13, 31, 64, 0.12);
+  --tk-shadow-lg: 0 8px 24px rgba(13, 31, 64, 0.16);
+
+  /* --- Layout --- */
+  --tk-container-max: 1200px;
+  --tk-header-height: 64px;
+}

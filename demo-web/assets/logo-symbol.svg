@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TKoidra">
+  <title>TKoidra</title>
+  <!-- Carré haut-gauche -->
+  <rect x="4" y="4" width="22" height="22" rx="3" fill="#0D1F40"/>
+  <!-- Carré haut-droite -->
+  <rect x="30" y="4" width="22" height="22" rx="3" fill="#0D1F40"/>
+  <!-- Carré bas-gauche -->
+  <rect x="4" y="30" width="22" height="22" rx="3" fill="#0D1F40"/>
+  <!-- Position cible du 4e carré (tirets) -->
+  <rect x="30" y="30" width="22" height="22" rx="3" fill="none" stroke="#0D1F40" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.35"/>
+  <!-- 4e carré déplacé — ¿Te cuadra? -->
+  <rect x="38" y="38" width="22" height="22" rx="3" fill="#00B4D8"/>
+</svg>
