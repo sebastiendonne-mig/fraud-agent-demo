@@ -1,0 +1,352 @@
+[
+  {
+    "id_sinistre": "SIN-2024-0001",
+    "date_declaration": "2024-08-08",
+    "type": "degat_des_eaux",
+    "montant_reclame": 5604,
+    "id_reparateur": "REP-006"
+  },
+  {
+    "id_sinistre": "SIN-2024-0002",
+    "date_declaration": "2024-02-17",
+    "type": "bris_de_glace",
+    "montant_reclame": 610,
+    "id_reparateur": "REP-005"
+  },
+  {
+    "id_sinistre": "SIN-2024-0003",
+    "date_declaration": "2024-10-22",
+    "type": "bris_de_glace",
+    "montant_reclame": 240,
+    "id_reparateur": "REP-005"
+  },
+  {
+    "id_sinistre": "SIN-2024-0004",
+    "date_declaration": "2024-05-13",
+    "type": "bris_de_glace",
+    "montant_reclame": 693,
+    "id_reparateur": "REP-010"
+  },
+  {
+    "id_sinistre": "SIN-2024-0005",
+    "date_declaration": "2024-08-30",
+    "type": "catastrophe_naturelle",
+    "montant_reclame": 22589,
+    "id_reparateur": "REP-003"
+  },
+  {
+    "id_sinistre": "SIN-2024-0006",
+    "date_declaration": "2024-03-25",
+    "type": "accident_auto",
+    "montant_reclame": 15140,
+    "id_reparateur": "REP-007"
+  },
+  {
+    "id_sinistre": "SIN-2024-0007",
+    "date_declaration": "2024-10-25",
+    "type": "accident_auto",
+    "montant_reclame": 5652,
+    "id_reparateur": "REP-009"
+  },
+  {
+    "id_sinistre": "SIN-2024-0008",
+    "date_declaration": "2024-07-28",
+    "type": "accident_auto",
+    "montant_reclame": 10488,
+    "id_reparateur": "REP-007"
+  },
+  {
+    "id_sinistre": "SIN-2024-0009",
+    "date_declaration": "2024-08-14",
+    "type": "incendie",
+    "montant_reclame": 35500,
+    "id_reparateur": "REP-004"
+  },
+  {
+    "id_sinistre": "SIN-2024-0010",
+    "date_declaration": "2024-08-21",
+    "type": "bris_de_glace",
+    "montant_reclame": 799,
+    "id_reparateur": "REP-008"
+  },
+  {
+    "id_sinistre": "SIN-2024-0011",
+    "date_declaration": "2024-01-23",
+    "type": "degat_des_eaux",
+    "montant_reclame": 10362,
+    "id_reparateur": "REP-005"
+  },
+  {
+    "id_sinistre": "SIN-2024-0012",
+    "date_declaration": "2024-08-21",
+    "type": "incendie",
+    "montant_reclame": 14742,
+    "id_reparateur": "REP-010"
+  },
+  {
+    "id_sinistre": "SIN-2024-0013",
+    "date_declaration": "2024-10-07",
+    "type": "incendie",
+    "montant_reclame": 33108,
+    "id_reparateur": "REP-003"
+  },
+  {
+    "id_sinistre": "SIN-2024-0014",
+    "date_declaration": "2024-05-22",
+    "type": "degat_des_eaux",
+    "montant_reclame": 3376,
+    "id_reparateur": "REP-005"
+  },
+  {
+    "id_sinistre": "SIN-2024-0015",
+    "date_declaration": "2024-03-16",
+    "type": "catastrophe_naturelle",
+    "montant_reclame": 4492,
+    "id_reparateur": "REP-001"
+  },
+  {
+    "id_sinistre": "SIN-2024-0016",
+    "date_declaration": "2024-03-04",
+    "type": "accident_auto",
+    "montant_reclame": 8892,
+    "id_reparateur": "REP-007"
+  },
+  {
+    "id_sinistre": "SIN-2024-0017",
+    "date_declaration": "2024-08-08",
+    "type": "accident_auto",
+    "montant_reclame": 2170,
+    "id_reparateur": "REP-001"
+  },
+  {
+    "id_sinistre": "SIN-2024-0018",
+    "date_declaration": "2024-02-13",
+    "type": "accident_auto",
+    "montant_reclame": 11783,
+    "id_reparateur": "REP-009"
+  },
+  {
+    "id_sinistre": "SIN-2024-0019",
+    "date_declaration": "2024-06-09",
+    "type": "catastrophe_naturelle",
+    "montant_reclame": 24584,
+    "id_reparateur": "REP-002"
+  },
+  {
+    "id_sinistre": "SIN-2024-0020",
+    "date_declaration": "2024-03-11",
+    "type": "accident_auto",
+    "montant_reclame": 12991,
+    "id_reparateur": "REP-007"
+  },
+  {
+    "id_sinistre": "SIN-2024-0021",
+    "date_declaration": "2024-08-14",
+    "type": "vol",
+    "montant_reclame": 3995,
+    "id_reparateur": "REP-009"
+  },
+  {
+    "id_sinistre": "SIN-2024-0022",
+    "date_declaration": "2024-10-18",
+    "type": "accident_auto",
+    "montant_reclame": 813,
+    "id_reparateur": "REP-007"
+  },
+  {
+    "id_sinistre": "SIN-2024-0023",
+    "date_declaration": "2024-04-11",
+    "type": "bris_de_glace",
+    "montant_reclame": 244,
+    "id_reparateur": "REP-001"
+  },
+  {
+    "id_sinistre": "SIN-2024-0024",
+    "date_declaration": "2024-10-06",
+    "type": "accident_auto",
+    "montant_reclame": 12898,
+    "id_reparateur": "REP-001"
+  },
+  {
+    "id_sinistre": "SIN-2024-0025",
+    "date_declaration": "2024-10-02",
+    "type": "catastrophe_naturelle",
+    "montant_reclame": 12934,
+    "id_reparateur": "REP-004"
+  },
+  {
+    "id_sinistre": "SIN-2024-0026",
+    "date_declaration": "2024-04-23",
+    "type": "bris_de_glace",
+    "montant_reclame": 866,
+    "id_reparateur": "REP-008"
+  },
+  {
+    "id_sinistre": "SIN-2024-0027",
+    "date_declaration": "2024-03-18",
+    "type": "accident_auto",
+    "montant_reclame": 12513,
+    "id_reparateur": "REP-007"
+  },
+  {
+    "id_sinistre": "SIN-2024-0028",
+    "date_declaration": "2021-06-13",
+    "type": "degat_des_eaux",
+    "montant_reclame": 10247,
+    "id_reparateur": "REP-005"
+  },
+  {
+    "id_sinistre": "SIN-2024-0029",
+    "date_declaration": "2024-10-10",
+    "type": "bris_de_glace",
+    "montant_reclame": 1011,
+    "id_reparateur": "REP-004"
+  },
+  {
+    "id_sinistre": "SIN-2024-0030",
+    "date_declaration": "2024-07-15",
+    "type": "incendie",
+    "montant_reclame": 17989,
+    "id_reparateur": "REP-007"
+  },
+  {
+    "id_sinistre": "SIN-2024-0031",
+    "date_declaration": "2024-11-06",
+    "type": "vol",
+    "montant_reclame": 3655,
+    "id_reparateur": "REP-002"
+  },
+  {
+    "id_sinistre": "SIN-2024-0032",
+    "date_declaration": "2024-08-11",
+    "type": "degat_des_eaux",
+    "montant_reclame": 7106,
+    "id_reparateur": "REP-009"
+  },
+  {
+    "id_sinistre": "SIN-2024-0033",
+    "date_declaration": "2024-06-05",
+    "type": "bris_de_glace",
+    "montant_reclame": 198,
+    "id_reparateur": "REP-004"
+  },
+  {
+    "id_sinistre": "SIN-2024-0034",
+    "date_declaration": "2024-02-27",
+    "type": "accident_auto",
+    "montant_reclame": 5684,
+    "id_reparateur": "REP-001"
+  },
+  {
+    "id_sinistre": "SIN-2024-0035",
+    "date_declaration": "2024-08-06",
+    "type": "accident_auto",
+    "montant_reclame": 1116,
+    "id_reparateur": "REP-009"
+  },
+  {
+    "id_sinistre": "SIN-2024-0036",
+    "date_declaration": "2024-05-08",
+    "type": "vol",
+    "montant_reclame": 811,
+    "id_reparateur": "REP-002"
+  },
+  {
+    "id_sinistre": "SIN-2024-0037",
+    "date_declaration": "2024-10-23",
+    "type": "vol",
+    "montant_reclame": 4309,
+    "id_reparateur": "REP-006"
+  },
+  {
+    "id_sinistre": "SIN-2024-0038",
+    "date_declaration": "2024-01-20",
+    "type": "degat_des_eaux",
+    "montant_reclame": 4059,
+    "id_reparateur": "REP-010"
+  },
+  {
+    "id_sinistre": "SIN-2024-0039",
+    "date_declaration": "2024-06-25",
+    "type": "catastrophe_naturelle",
+    "montant_reclame": 15299,
+    "id_reparateur": "REP-006"
+  },
+  {
+    "id_sinistre": "SIN-2024-0040",
+    "date_declaration": "2024-08-05",
+    "type": "bris_de_glace",
+    "montant_reclame": 1101,
+    "id_reparateur": "REP-003"
+  },
+  {
+    "id_sinistre": "SIN-2024-0041",
+    "date_declaration": "2024-01-26",
+    "type": "vol",
+    "montant_reclame": 1494,
+    "id_reparateur": "REP-004"
+  },
+  {
+    "id_sinistre": "SIN-2024-0042",
+    "date_declaration": "2024-06-18",
+    "type": "degat_des_eaux",
+    "montant_reclame": 7684,
+    "id_reparateur": "REP-002"
+  },
+  {
+    "id_sinistre": "SIN-2024-0043",
+    "date_declaration": "2024-05-06",
+    "type": "vol",
+    "montant_reclame": 2077,
+    "id_reparateur": "REP-002"
+  },
+  {
+    "id_sinistre": "SIN-2024-0044",
+    "date_declaration": "2024-06-02",
+    "type": "vol",
+    "montant_reclame": 5963,
+    "id_reparateur": "REP-005"
+  },
+  {
+    "id_sinistre": "SIN-2024-0045",
+    "date_declaration": "2024-11-24",
+    "type": "vol",
+    "montant_reclame": 4892,
+    "id_reparateur": "REP-007"
+  },
+  {
+    "id_sinistre": "SIN-2024-0046",
+    "date_declaration": "2024-12-03",
+    "type": "bris_de_glace",
+    "montant_reclame": 822,
+    "id_reparateur": "REP-007"
+  },
+  {
+    "id_sinistre": "SIN-2024-0047",
+    "date_declaration": "2024-05-05",
+    "type": "incendie",
+    "montant_reclame": 6772,
+    "id_reparateur": "REP-010"
+  },
+  {
+    "id_sinistre": "SIN-2024-0048",
+    "date_declaration": "2024-12-06",
+    "type": "incendie",
+    "montant_reclame": 42338,
+    "id_reparateur": "REP-003"
+  },
+  {
+    "id_sinistre": "SIN-2024-0049",
+    "date_declaration": "2024-06-04",
+    "type": "accident_auto",
+    "montant_reclame": 14886,
+    "id_reparateur": "REP-004"
+  },
+  {
+    "id_sinistre": "SIN-2024-0050",
+    "date_declaration": "2024-08-18",
+    "type": "accident_auto",
+    "montant_reclame": 9886,
+    "id_reparateur": "REP-004"
+  }
+]
