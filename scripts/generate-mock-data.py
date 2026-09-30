@@ -95,25 +95,30 @@ ASSURES = [
 
 # Réparateurs agréés (dont REP-007 = réparateur complice du réseau frauduleux)
 REPARATEURS = {
-    "REP-001": "Garage Lefranc (Paris 15e)",
-    "REP-002": "AutoService Méditerranée (Marseille)",
-    "REP-003": "Carrosserie du Rhône (Lyon)",
-    "REP-004": "Ateliers de la Loire (Nantes)",
-    "REP-005": "Plomberie Gironde (Bordeaux)",
-    "REP-006": "EDF Habitat Services (Toulouse)",
-    "REP-007": "Carrosserie Express Paris (Paris 18e)",   # réseau frauduleux
-    "REP-008": "Vitrerie Nationale (Lille)",
-    "REP-009": "Dépannage Auto 06 (Nice)",
-    "REP-010": "Toiture & Couverture Bretagne (Rennes)",
+    "REP-001": "Garage Démo A",
+    "REP-002": "Garage Démo B",
+    "REP-003": "Carrosserie Démo C",
+    "REP-004": "Atelier Démo D",
+    "REP-005": "Plomberie Démo E",
+    "REP-006": "Services Habitat Démo F",
+    "REP-007": "Carrosserie Démo G",   # réseau frauduleux
+    "REP-008": "Vitrerie Démo H",
+    "REP-009": "Dépannage Démo I",
+    "REP-010": "Toiture Démo J",
 }
 
 TYPES_SINISTRE = ["degat_des_eaux", "bris_de_glace", "accident_auto",
                   "incendie", "vol", "catastrophe_naturelle"]
 
 # IP normales (pool large) vs IP suspectes (pool restreint = même adresse partagée)
-IP_NORMALES = [f"91.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}"
-               for _ in range(40)]
-IP_SUSPECTES = ["185.23.14.77", "185.23.14.78"]  # même bloc = même réseau frauduleux
+# Plages réservées à la documentation (RFC 5737) : aucune adresse réelle.
+# Les 3 tirages aléatoires par adresse sont conservés (résultat ignoré) pour ne pas
+# décaler la suite de la séquence aléatoire : les montants générés restent identiques.
+IP_NORMALES = []
+for _i in range(40):
+    random.randint(0, 255); random.randint(0, 255); random.randint(1, 254)
+    IP_NORMALES.append(f"198.51.100.{_i + 1}")
+IP_SUSPECTES = ["203.0.113.77", "203.0.113.78"]  # même bloc = même réseau frauduleux
 
 
 def random_date(start: date, end: date) -> date:
@@ -361,11 +366,12 @@ LIEUX_ACCIDENT = [
 ]
 
 CONDUCTEURS_TIERS = [
-    ("DT-456-AB", "Karim Bensalem"),
-    ("GH-789-CD", "Nathalie Voisin"),
-    ("MN-123-EF", "Patrick Lemaire"),
-    ("ZZ-321-GH", "Ingrid Holst"),
-    ("YY-654-IJ", "Olivier Château"),
+    # Plaques manifestement fictives (aucune ne correspond à un format SIV plausible)
+    ("DEMO-001", "Karim Bensalem"),
+    ("DEMO-002", "Nathalie Voisin"),
+    ("DEMO-003", "Patrick Lemaire"),
+    ("DEMO-004", "Ingrid Holst"),
+    ("DEMO-005", "Olivier Château"),
 ]
 
 
