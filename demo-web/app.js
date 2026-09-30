@@ -51,20 +51,20 @@ const DEMO_SCENARIOS = {
     reparateur_count_90d: 1,
     ip_count_30d: 0,
     rapport_police: `PROCÈS-VERBAL N° PV-2024-0012
-Service : Brigade Territoriale de Gendarmerie — Metz Est
+Service : Unité fictive de démonstration
 Date : 14/03/2024 — 09h47
 
 CIRCONSTANCES : Collision en intersection réglementée par feux tricolores.
-Le véhicule de M. Laurent MARTIN (assuré, plaque EF-456-GH) circulait sur voie principale,
-feu vert. Le véhicule de M. Karim BENALI (tiers, plaque AB-123-CD, assuré MACIF n°9821034)
+Le véhicule de M. Laurent MARTIN (assuré, plaque DEMO-101) circulait sur voie principale,
+feu vert. Le véhicule de M. Karim BENALI (tiers, plaque DEMO-102, assuré Mutuelle Fictive d'Assurance n°0000000)
 a grillé le feu rouge en tournant à gauche et a percuté l'avant droit du véhicule assuré.
 
-TÉMOINS : Mme Sophie ROUSSEAU (08 12 34 56 78) confirme que M. BENALI a brûlé le feu rouge.
+TÉMOINS : Mme Sophie ROUSSEAU confirme que M. BENALI a brûlé le feu rouge.
 
 RESPONSABILITÉ : M. BENALI (tiers) responsable à 100 %. Aucun partage de responsabilité.
 Dommages matériels : 5 652 € (devis garage MARTIN & Fils). Dommages corporels : néant.
 
-Signé : Adjudant-Chef DUPONT — Gendarmerie Metz Est`,
+Signé : Agent fictif — Unité fictive de démonstration`,
   },
 };
 
@@ -425,18 +425,18 @@ document.getElementById("sinistreForm").addEventListener("submit", async (e) => 
   try {
     // ── Étape 1 : Scoring ──
     setStep("step-scoring", "active");
-    setStatus("Azure ML — Calcul du score fraude…");
+    setStatus("Calcul du score fraude…");
     const scoring = await runScoring(apiKey, sinistre);
     setStep("step-scoring", "done");
 
     show("resultScoring");
     displayScore(scoring);
 
-    // ── Étape 2 : Synapse (simulé visuellement) ──
+    // ── Étape 2 : analyse réseau (simulée visuellement) ──
     if (scoring.routing !== "STP") {
       setStep("step-synapse", "active");
-      setStatus("Azure Synapse — Analyse réseau inter-dossiers…");
-      await new Promise((r) => setTimeout(r, 800)); // simulation latence Synapse
+      setStatus("Analyse réseau inter-dossiers…");
+      await new Promise((r) => setTimeout(r, 800)); // simulation de latence
       setStep("step-synapse", "done");
 
       if (scoring.reason_codes && scoring.reason_codes.length) {
@@ -452,13 +452,13 @@ document.getElementById("sinistreForm").addEventListener("submit", async (e) => 
     // ── Étape 3 & 4 : Rapport police + Recours ──
     if (scoring.routing !== "STP" && rapportPolice) {
       setStep("step-police", "active");
-      setStatus("Azure OpenAI — Analyse sémantique du rapport de police…");
+      setStatus("Claude — Analyse du rapport de police…");
       const recours = await runRecours(apiKey, rapportPolice, sinistre.montant_reclame);
       setStep("step-police", "done");
 
       if (recours.recours_viable) {
         setStep("step-recours", "active");
-        setStatus("Power Automate — Génération du dossier de recours…");
+        setStatus("Génération du dossier de recours…");
         await new Promise((r) => setTimeout(r, 600)); // simulation envoi email
         setStep("step-recours", "done");
 

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fraud Agent Demo · TKoidra</title>
-  <meta name="description" content="Démonstration d'un pipeline agentique de détection de fraude assurance IARD : scoring ML hybride, analyse réseau, lecture sémantique de rapports de police et génération automatique de dossiers de recours." />
+  <meta name="description" content="Démonstration de détection de fraude en assurance IARD, sur données fictives : règles de scoring, analyse réseau, lecture de rapport de police et dossier de recours. Refonte en cours." />
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -687,13 +687,13 @@
 <div class="container">
 
   <div class="pipeline-badge">
-    <span>⚡</span> Pipeline agentique 5 étages
+    <span>⚡</span> Pipeline de détection de fraude
   </div>
 
   <h1>Simulation du pipeline de détection fraude</h1>
   <p class="page-description">
     Saisissez un sinistre pour simuler le passage complet dans le pipeline :<br/>
-    scoring ML hybride · analyse réseau · lecture sémantique · génération dossier de recours.
+    règles de scoring · analyse réseau · lecture de rapport de police · dossier de recours.
   </p>
 
   <!-- Pipeline stepper -->
@@ -701,28 +701,28 @@
     <div class="pipeline-step" id="step-scoring">
       <div class="step-inner">
         <div class="step-icon">🤖</div>
-        <div class="step-label">Azure ML<br/>Scoring</div>
+        <div class="step-label">Scoring<br/>Fraude</div>
       </div>
       <div class="connector"></div>
     </div>
     <div class="pipeline-step" id="step-synapse">
       <div class="step-inner">
         <div class="step-icon">🕸️</div>
-        <div class="step-label">Synapse<br/>Graphe</div>
+        <div class="step-label">Réseau<br/>Inter-dossiers</div>
       </div>
       <div class="connector"></div>
     </div>
     <div class="pipeline-step" id="step-police">
       <div class="step-inner">
         <div class="step-icon">📄</div>
-        <div class="step-label">OpenAI<br/>Rapport</div>
+        <div class="step-label">Claude<br/>Rapport</div>
       </div>
       <div class="connector"></div>
     </div>
     <div class="pipeline-step" id="step-recours">
       <div class="step-inner">
         <div class="step-icon">⚖️</div>
-        <div class="step-label">Power Automate<br/>Recours</div>
+        <div class="step-label">Dossier<br/>Recours</div>
       </div>
       <div class="connector" style="display:none"></div>
     </div>
@@ -783,7 +783,7 @@
 
         <div class="form-group full">
           <div class="enrichment-row">
-            <span class="enrichment-label">📊 Données enrichissement Dataverse (pré-calculées)</span>
+            <span class="enrichment-label">📊 Données d'enrichissement (simulées)</span>
             <div class="form-group">
               <label>Nb sinistres / même réparateur (90j)</label>
               <input type="number" id="reparateur_count_90d" value="2" min="0" max="50" />
@@ -824,7 +824,7 @@
 
   <!-- Résultats scoring -->
   <div class="card hidden" id="resultScoring">
-    <h2><span class="step-badge">2</span> Score fraude — Azure ML</h2>
+    <h2><span class="step-badge">2</span> Score fraude</h2>
     <div id="errorBanner" class="error-banner hidden">
       <span>⚠️</span>
       <span id="errorText"></span>
@@ -847,7 +847,7 @@
             <div class="sdi-label">Score règles</div>
             <div class="sdi-value" id="scoreRegles">—</div>
           </div>
-          <div class="score-detail-item">
+          <div class="score-detail-item" style="display:none">
             <div class="sdi-label">Score ML</div>
             <div class="sdi-value" id="scoreMl">—</div>
           </div>
@@ -876,7 +876,7 @@
 
   <!-- Recours -->
   <div class="card hidden" id="resultRecours">
-    <h2><span class="step-badge">4</span> Dossier de recours — Power Automate</h2>
+    <h2><span class="step-badge">4</span> Dossier de recours</h2>
 
     <div class="recours-header">
       <div class="recours-icon">⚖️</div>
@@ -907,7 +907,7 @@
       <a href="https://tkoidra.com">Portfolio</a>
       <a href="https://www.linkedin.com/in/sebastiendonne" target="_blank" rel="noopener">LinkedIn</a>
     </div>
-    <p class="tk-footer-copy">© 2026 TKoidra · Sébastien Donné — Consultant IA agentique &amp; Power Platform · Données entièrement fictives</p>
+    <p class="tk-footer-copy">© 2026 TKoidra · Sébastien Donné — Consultant IA agentique · Données entièrement fictives</p>
   </div>
 </footer>
 

@@ -57,22 +57,13 @@ Format de sortie JSON attendu :
 
 ---
 
-## Instructions d'usage (Azure OpenAI)
+## Instructions d'usage
 
-**Déploiement recommandé :** GPT-4o (gpt-4o-2024-11-20 ou supérieur)
-
-**Paramètres suggérés :**
-```json
-{
-  "temperature": 0.1,
-  "max_tokens": 1200,
-  "response_format": { "type": "json_object" }
-}
-```
+**Test :** ce prompt est testé avec Claude par `scripts/test-prompts.py`. Les paramètres d'appel (modèle, longueur maximale) sont ceux de ce script.
 
 **Structure d'appel API — entrée composée :**
 
-Ce prompt prend en entrée le résultat JSON de `analyse-rapport-police` enrichi des données du dossier sinistre depuis Dataverse.
+Ce prompt prend en entrée le résultat JSON de `analyse-rapport-police` enrichi des données du dossier sinistre.
 
 ```json
 {
@@ -83,7 +74,7 @@ Ce prompt prend en entrée le résultat JSON de `analyse-rapport-police` enrichi
     },
     {
       "role": "user",
-      "content": "Voici l'analyse du rapport de police et les données du sinistre. Évalue la viabilité du recours.\n\nAnalyse rapport de police :\n{{json_analyse_rapport}}\n\nDonnées sinistre Dataverse :\n{{json_sinistre_dataverse}}"
+      "content": "Voici l'analyse du rapport de police et les données du sinistre. Évalue la viabilité du recours.\n\nAnalyse rapport de police :\n{{json_analyse_rapport}}\n\nDonnées du dossier sinistre :\n{{json_sinistre}}"
     }
   ]
 }
@@ -91,7 +82,7 @@ Ce prompt prend en entrée le résultat JSON de `analyse-rapport-police` enrichi
 
 **Variables à injecter :**
 - `{{json_analyse_rapport}}` — sortie JSON du prompt `analyse-rapport-police`
-- `{{json_sinistre_dataverse}}` — objet JSON du dossier sinistre tel que stocké dans Dataverse (champs : id_sinistre, montant_reclame, franchise, id_assure, date_declaration, type, etc.)
+- `{{json_sinistre}}` — objet JSON du dossier sinistre (champs : id_sinistre, montant_reclame, franchise, id_assure, date_declaration, type, etc.)
 
 ---
 
