@@ -4,7 +4,7 @@ Modèle de scoring fraude — Agent 2 du pipeline agentique.
 Architecture hybride :
   Score final (0-100) = score_règles (0-50) + score_ml (0-50)
 
-  - score_règles : règles métier explicables → Reason Codes Power BI
+  - score_règles : règles métier explicables → Reason Codes
   - score_ml     : régression logistique entraînée sur les features engineerées
 
 Catégories de risque :
@@ -14,10 +14,9 @@ Catégories de risque :
 
 Usage CLI :
   python scoring-model.py --mode train
-  python scoring-model.py --mode score --sinistres ../../data-mock/sinistres_mock.json
+  python scoring-model.py --mode score --sinistres ../data-mock/sinistres_mock.json
 
-Azure ML : le script accepte les arguments standard MLflow ; les chemins
-           d'entrée/sortie sont passés via --data-path et --model-output.
+Suivi d'expériences : MLflow est utilisé s'il est installé (optionnel).
 """
 
 import argparse
@@ -37,7 +36,7 @@ from sklearn.preprocessing import StandardScaler
 
 warnings.filterwarnings("ignore")
 
-# Intégration MLflow optionnelle (disponible nativement dans Azure ML)
+# Intégration MLflow optionnelle
 try:
     import mlflow
     MLFLOW_AVAILABLE = True
@@ -48,7 +47,7 @@ except ImportError:
 # Chemins par défaut (relatifs au script)
 # ---------------------------------------------------------------------------
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-_REPO_ROOT = os.path.join(_SCRIPT_DIR, "..", "..")
+_REPO_ROOT = os.path.join(_SCRIPT_DIR, "..")
 
 DEFAULT_SINISTRES = os.path.join(_REPO_ROOT, "data-mock", "sinistres_mock.json")
 DEFAULT_POLICES = os.path.join(_REPO_ROOT, "data-mock", "polices_mock.json")
@@ -339,7 +338,7 @@ def score_batch(sinistres_path: str, polices_path: str, model_dir: str,
     df["score_fraude"] = (df["score_ml"] + df["score_regles"]).clip(upper=100).round(1)
     df["categorie_risque"] = df["score_fraude"].apply(categorize_risk)
 
-    # Colonnes de sortie (format Dataverse)
+    # Colonnes de sortie
     result = df[[
         "id_sinistre", "id_police", "id_assure", "date_declaration",
         "type", "montant_reclame", "id_reparateur", "rapport_police",
@@ -366,7 +365,7 @@ def score_batch(sinistres_path: str, polices_path: str, model_dir: str,
 
 def score_single(sinistre: dict, police: dict, model_dir: str) -> dict:
     """
-    Score un seul sinistre en temps réel (appelé par l'agent Copilot Studio).
+    Score un seul sinistre en temps réel (appelé par l'orchestrateur).
     Retourne le sinistre enrichi avec score, catégorie et reason codes.
     """
     df_sin = pd.DataFrame([sinistre])
@@ -379,7 +378,7 @@ def score_single(sinistre: dict, police: dict, model_dir: str) -> dict:
     df["date_souscription"] = pd.to_datetime(df["date_souscription"])
 
     # Les features de clustering nécessitent l'historique complet
-    # En production, on requête Dataverse pour obtenir les sinistres récents du même réparateur/IP
+    # En production, on interrogerait la base des sinistres pour obtenir les sinistres récents du même réparateur/IP
     # Ici on fournit des valeurs par défaut conservatrices pour les features de cluster
     df["reparateur_count_90d"] = sinistre.get("_reparateur_count_90d", 0)
     df["ip_count_30d"] = sinistre.get("_ip_count_30d", 0)
@@ -432,7 +431,7 @@ def categorize_risk(score: float) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Scoring fraude — Agent 2 Azure ML"
+        description="Scoring fraude — règles métier + régression logistique"
     )
     parser.add_argument("--mode", choices=["train", "score"], default="train",
                         help="'train' : entraîne et sauvegarde le modèle ; "

@@ -58,18 +58,9 @@ Format de sortie JSON attendu :
 
 ---
 
-## Instructions d'usage (Azure OpenAI)
+## Instructions d'usage
 
-**Déploiement recommandé :** GPT-4o (gpt-4o-2024-11-20 ou supérieur)
-
-**Paramètres suggérés :**
-```json
-{
-  "temperature": 0.1,
-  "max_tokens": 1000,
-  "response_format": { "type": "json_object" }
-}
-```
+**Test :** ce prompt est testé avec Claude par `scripts/test-prompts.py`. Les paramètres d'appel (modèle, longueur maximale) sont ceux de ce script.
 
 **Structure d'appel API :**
 ```json
@@ -87,7 +78,7 @@ Format de sortie JSON attendu :
 }
 ```
 
-**Variable à injecter :** `{{rapport_police_texte}}` — texte brut du rapport de police tel que stocké dans Dataverse ou transmis par Copilot Studio.
+**Variable à injecter :** `{{rapport_police_texte}}` — texte brut du rapport de police tel que fourni avec le dossier sinistre.
 
 ---
 

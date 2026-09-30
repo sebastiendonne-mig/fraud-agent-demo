@@ -1,8 +1,8 @@
 """
-Test des prompts OpenAI (analyse rapport de police + identification tiers)
+Test des prompts (analyse rapport de police + identification tiers)
 sur les rapports de police fictifs du jeu de données mock.
 
-Utilise le SDK Anthropic en local pour valider les prompts avant déploiement Azure OpenAI.
+Utilise le SDK Anthropic en local pour valider les prompts.
 """
 
 import json
@@ -189,7 +189,7 @@ def identifier_tiers(client: anthropic.Anthropic, analyse_rapport: dict, sinistr
         "Voici l'analyse du rapport de police et les données du sinistre. "
         "Évalue la viabilité du recours.\n\n"
         f"Analyse rapport de police :\n{json.dumps(analyse_rapport, ensure_ascii=False, indent=2)}\n\n"
-        f"Données sinistre Dataverse :\n{json.dumps(sinistre, ensure_ascii=False, indent=2)}"
+        f"Données du dossier sinistre :\n{json.dumps(sinistre, ensure_ascii=False, indent=2)}"
     )
     response = client.messages.create(
         model="claude-opus-4-7",
@@ -216,7 +216,7 @@ def main():
     resultats = []
 
     print(f"\n{'=' * 60}")
-    print("TEST DES PROMPTS OPENAI — Analyse rapports de police")
+    print("TEST DES PROMPTS — Analyse rapports de police")
     print(f"{'=' * 60}\n")
 
     for ref_rapport, texte_rapport in sorted(rapports.items()):
