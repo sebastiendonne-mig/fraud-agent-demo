@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fraud Agent Demo · TKoidra</title>
-  <meta name="description" content="Démonstration d'un pipeline agentique de détection de fraude assurance IARD : scoring ML hybride, analyse réseau, lecture sémantique de rapports de police et génération automatique de dossiers de recours." />
+  <meta name="description" content="Démonstration de détection de fraude en assurance IARD, sur données fictives : règles de scoring, analyse réseau, lecture de rapport de police et dossier de recours. Refonte en cours." />
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -693,7 +693,7 @@
   <h1>Simulation du pipeline de détection fraude</h1>
   <p class="page-description">
     Saisissez un sinistre pour simuler le passage complet dans le pipeline :<br/>
-    scoring ML hybride · analyse réseau · lecture sémantique · génération dossier de recours.
+    règles de scoring · analyse réseau · lecture de rapport de police · dossier de recours.
   </p>
 
   <!-- Pipeline stepper -->
@@ -847,7 +847,7 @@
             <div class="sdi-label">Score règles</div>
             <div class="sdi-value" id="scoreRegles">—</div>
           </div>
-          <div class="score-detail-item">
+          <div class="score-detail-item" style="display:none">
             <div class="sdi-label">Score ML</div>
             <div class="sdi-value" id="scoreMl">—</div>
           </div>
