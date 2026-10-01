@@ -78,7 +78,7 @@ fraud-agent-demo/
 │                   lib/ (règles, triage, outils, agent, stockage), config/, replays/, test/, scripts/
 ├── ml/             scoring de référence (règles + régression logistique) et features
 ├── data-mock/      données fictives (sinistres, polices, procès-verbaux, scores)
-├── scripts/        générateur de données reproductible ; ancien test de prompts (prototype)
+├── scripts/        générateur de données reproductible
 └── docs/           audit du 30/09/2026 (état d'origine)
 ```
 

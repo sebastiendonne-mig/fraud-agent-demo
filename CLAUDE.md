@@ -50,7 +50,7 @@ dossier ──▶ validation stricte ──▶ règles (score /50) ──▶ tri
 - `demo-web/` — page statique (`index.html`, `app.js`, `scenarios.js`) et fonctions Vercel (`api/analyze.js`, `api/finalize.js`, `api/quota.js`) ; `lib/` (règles, triage, outils, agent, stockage, handlers), `config/`, `data/`, `replays/`, `test/`, `scripts/`
 - `ml/` — scoring de référence (règles + régression logistique) et features documentées. La régression logistique n'est ni exécutée ni affichée par la démo (partie probabiliste prévue au lot 2)
 - `data-mock/` — données fictives (sinistres, polices, procès-verbaux, scores)
-- `scripts/` — générateur de données reproductible ; `test-prompts.py` est un ancien script de test du prototype, conservé pour mémoire, non utilisé par la démo
+- `scripts/` — générateur de données reproductible (l'ancien `test-prompts.py`, prototype appelant l'API payante, a été supprimé ; l'historique git le garde)
 - `docs/` — audit du 30/09/2026 (état d'origine)
 
 ## Commandes (depuis `demo-web/`)
