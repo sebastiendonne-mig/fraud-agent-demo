@@ -1,0 +1,356 @@
+{
+  "enregistre_le": "01/10/2026",
+  "analyse": {
+    "proposition": {
+      "routage": "INVESTIGATION",
+      "mode": "instruction",
+      "score_regles": 15,
+      "reason_codes": [
+        "Sinistre déclaré 0 jours après la souscription de la police (< 30 jours)"
+      ],
+      "synthese": "Dossier routé INVESTIGATION (score 15/50) à cause d'un seul signal : le sinistre dégât des eaux a été déclaré le jour même de la souscription (0 jour). Le montant réclamé est de 10 362 € pour un plafond de 20 000 € et une franchise de 300 €. Aucun rapport de police n'est fourni, donc le recours n'a pas été évalué.",
+      "reason_codes_commentes": [
+        "Sinistre déclaré 0 jours après la souscription (< 30 jours) : la garantie a pu être souscrite peu avant le sinistre. Ce signal seul ne prouve rien. Il justifie de vérifier si le dommage existait déjà avant la souscription."
+      ],
+      "recours": {
+        "evalue": false,
+        "viable": false,
+        "tiers_responsable": "",
+        "assureur_adverse": "",
+        "part_responsabilite_tiers_pct": 0,
+        "certitude": "Sans objet",
+        "elements_factuels": [
+          "Aucun rapport de police fourni : recours non évalué."
+        ],
+        "montant_recuperable": null,
+        "seuil_euros": 500
+      },
+      "actions_proposees": [
+        "Poursuivre l'instruction conformément au routage INVESTIGATION.",
+        "Demander les justificatifs de la date et des circonstances du sinistre, ainsi que des photos du dommage.",
+        "Vérifier l'état du bien et son éventuel sinistre antérieur à la souscription.",
+        "Demander le devis ou la facture détaillée du réparateur REP-019.",
+        "Rechercher la cause du dégât des eaux (origine, tiers éventuel) pour déterminer si un recours est possible."
+      ],
+      "points_d_attention": [
+        "Le réparateur REP-019 n'est pas un signal des règles, donc son historique n'a pas été consulté. reparateur_count_90d vaut 1 et ip_count_30d vaut 0 (données d'enrichissement simulées).",
+        "Le montant réclamé représente environ la moitié du plafond.",
+        "Le recours n'a pas été évalué faute de rapport de police."
+      ]
+    },
+    "trace": {
+      "tours": [
+        {
+          "phase": "analyse",
+          "numero": 1,
+          "debut_ms": 1,
+          "fin_ms": 6225,
+          "duree_ms": 6224,
+          "stop_reason": "tool_use",
+          "usage": {
+            "entree": 4,
+            "sortie": 869,
+            "cache_lecture": 2334,
+            "cache_creation": 471
+          },
+          "outils": [
+            {
+              "nom": "proposer_decision",
+              "entree": {
+                "synthese": "Dossier routé INVESTIGATION (score 15/50) à cause d'un seul signal : le sinistre dégât des eaux a été déclaré le jour même de la souscription (0 jour). Le montant réclamé est de 10 362 € pour un plafond de 20 000 € et une franchise de 300 €. Aucun rapport de police n'est fourni, donc le recours n'a pas été évalué.",
+                "reason_codes_commentes": [
+                  "Sinistre déclaré 0 jours après la souscription (< 30 jours) : la garantie a pu être souscrite peu avant le sinistre. Ce signal seul ne prouve rien. Il justifie de vérifier si le dommage existait déjà avant la souscription."
+                ],
+                "recours": {
+                  "evalue": false,
+                  "viable": false,
+                  "tiers_responsable": "",
+                  "assureur_adverse": "",
+                  "part_responsabilite_tiers_pct": 0,
+                  "certitude": "Sans objet",
+                  "elements_factuels": [
+                    "Aucun rapport de police fourni : recours non évalué."
+                  ]
+                },
+                "actions_proposees": [
+                  "Poursuivre l'instruction conformément au routage INVESTIGATION.",
+                  "Demander les justificatifs de la date et des circonstances du sinistre, ainsi que des photos du dommage.",
+                  "Vérifier l'état du bien et son éventuel sinistre antérieur à la souscription.",
+                  "Demander le devis ou la facture détaillée du réparateur REP-019.",
+                  "Rechercher la cause du dégât des eaux (origine, tiers éventuel) pour déterminer si un recours est possible."
+                ],
+                "points_d_attention": [
+                  "Le réparateur REP-019 n'est pas un signal des règles, donc son historique n'a pas été consulté. reparateur_count_90d vaut 1 et ip_count_30d vaut 0 (données d'enrichissement simulées).",
+                  "Le montant réclamé représente environ la moitié du plafond.",
+                  "Le recours n'a pas été évalué faute de rapport de police."
+                ]
+              },
+              "sortie": "valide",
+              "duree_ms": 0
+            }
+          ]
+        }
+      ],
+      "phases": [
+        {
+          "phase": "analyse",
+          "debut_ms": 0,
+          "duree_ms": 6225,
+          "issue": "pause"
+        }
+      ],
+      "corrections": [],
+      "usage_total": {
+        "entree": 2809,
+        "sortie": 869,
+        "cache_lecture": 2334,
+        "cache_creation": 471
+      },
+      "duree_totale_ms": 6225
+    }
+  },
+  "finalisation": {
+    "valider": {
+      "finalisation": {
+        "statut_final": "INSTRUCTION_A_POURSUIVRE",
+        "decision_gestionnaire": "valider",
+        "synthese": "Décision validée par le gestionnaire. Le dossier reste en INVESTIGATION (score 15/50) : le sinistre a été déclaré le jour de la souscription. L'instruction se poursuit. Aucun rapport de police n'a été fourni, donc le recours n'a pas été évalué et aucun courrier n'est préparé.",
+        "brouillon_courrier_recours": "",
+        "plan_actions": {
+          "j5": "Demander les justificatifs de la date et des circonstances du sinistre, des photos du dommage et le devis ou la facture détaillée de REP-019.",
+          "j15": "Vérifier l'état du bien et d'éventuels sinistres antérieurs à la souscription. Rechercher la cause et l'origine du dégât des eaux, notamment pour savoir si un tiers est en cause.",
+          "j30": "Faire le point sur les éléments reçus. Décider de la suite de l'instruction. Évaluer le recours si un rapport ou un tiers apparaît."
+        },
+        "avertissement": "Brouillon — aucun envoi réel."
+      },
+      "trace": {
+        "tours": [
+          {
+            "phase": "analyse",
+            "numero": 1,
+            "debut_ms": 1,
+            "fin_ms": 6225,
+            "duree_ms": 6224,
+            "stop_reason": "tool_use",
+            "usage": {
+              "entree": 4,
+              "sortie": 869,
+              "cache_lecture": 2334,
+              "cache_creation": 471
+            },
+            "outils": [
+              {
+                "nom": "proposer_decision",
+                "entree": {
+                  "synthese": "Dossier routé INVESTIGATION (score 15/50) à cause d'un seul signal : le sinistre dégât des eaux a été déclaré le jour même de la souscription (0 jour). Le montant réclamé est de 10 362 € pour un plafond de 20 000 € et une franchise de 300 €. Aucun rapport de police n'est fourni, donc le recours n'a pas été évalué.",
+                  "reason_codes_commentes": [
+                    "Sinistre déclaré 0 jours après la souscription (< 30 jours) : la garantie a pu être souscrite peu avant le sinistre. Ce signal seul ne prouve rien. Il justifie de vérifier si le dommage existait déjà avant la souscription."
+                  ],
+                  "recours": {
+                    "evalue": false,
+                    "viable": false,
+                    "tiers_responsable": "",
+                    "assureur_adverse": "",
+                    "part_responsabilite_tiers_pct": 0,
+                    "certitude": "Sans objet",
+                    "elements_factuels": [
+                      "Aucun rapport de police fourni : recours non évalué."
+                    ]
+                  },
+                  "actions_proposees": [
+                    "Poursuivre l'instruction conformément au routage INVESTIGATION.",
+                    "Demander les justificatifs de la date et des circonstances du sinistre, ainsi que des photos du dommage.",
+                    "Vérifier l'état du bien et son éventuel sinistre antérieur à la souscription.",
+                    "Demander le devis ou la facture détaillée du réparateur REP-019.",
+                    "Rechercher la cause du dégât des eaux (origine, tiers éventuel) pour déterminer si un recours est possible."
+                  ],
+                  "points_d_attention": [
+                    "Le réparateur REP-019 n'est pas un signal des règles, donc son historique n'a pas été consulté. reparateur_count_90d vaut 1 et ip_count_30d vaut 0 (données d'enrichissement simulées).",
+                    "Le montant réclamé représente environ la moitié du plafond.",
+                    "Le recours n'a pas été évalué faute de rapport de police."
+                  ]
+                },
+                "sortie": "valide",
+                "duree_ms": 0
+              }
+            ]
+          },
+          {
+            "phase": "finalisation",
+            "numero": 1,
+            "debut_ms": 6226,
+            "fin_ms": 9705,
+            "duree_ms": 3479,
+            "stop_reason": "tool_use",
+            "usage": {
+              "entree": 4,
+              "sortie": 458,
+              "cache_lecture": 2805,
+              "cache_creation": 1129
+            },
+            "outils": [
+              {
+                "nom": "finaliser_dossier",
+                "entree": {
+                  "statut_final": "INSTRUCTION_A_POURSUIVRE",
+                  "synthese": "Décision validée par le gestionnaire. Le dossier reste en INVESTIGATION (score 15/50) : le sinistre a été déclaré le jour de la souscription. L'instruction se poursuit. Aucun rapport de police n'a été fourni, donc le recours n'a pas été évalué et aucun courrier n'est préparé.",
+                  "brouillon_courrier_recours": "",
+                  "plan_actions": {
+                    "j5": "Demander les justificatifs de la date et des circonstances du sinistre, des photos du dommage et le devis ou la facture détaillée de REP-019.",
+                    "j15": "Vérifier l'état du bien et d'éventuels sinistres antérieurs à la souscription. Rechercher la cause et l'origine du dégât des eaux, notamment pour savoir si un tiers est en cause.",
+                    "j30": "Faire le point sur les éléments reçus. Décider de la suite de l'instruction. Évaluer le recours si un rapport ou un tiers apparaît."
+                  }
+                },
+                "sortie": "valide",
+                "duree_ms": 0
+              }
+            ]
+          }
+        ],
+        "phases": [
+          {
+            "phase": "analyse",
+            "debut_ms": 0,
+            "duree_ms": 6225,
+            "issue": "pause"
+          },
+          {
+            "phase": "finalisation",
+            "debut_ms": 6226,
+            "duree_ms": 3479,
+            "issue": "termine"
+          }
+        ],
+        "corrections": [],
+        "usage_total": {
+          "entree": 6747,
+          "sortie": 1327,
+          "cache_lecture": 5139,
+          "cache_creation": 1600
+        },
+        "duree_totale_ms": 9704
+      }
+    },
+    "rejeter": {
+      "finalisation": {
+        "statut_final": "REJETE_PAR_GESTIONNAIRE",
+        "decision_gestionnaire": "rejeter",
+        "synthese": "Proposition rejetée par le gestionnaire. Motif saisi : « Motif fictif d'enregistrement : pièces justificatives insuffisantes. » Le routage fraude INVESTIGATION (score 15/50, sinistre déclaré 0 jour après la souscription) reste inchangé. Le recours n'a pas été évalué faute de rapport de police.",
+        "brouillon_courrier_recours": "",
+        "plan_actions": {
+          "j5": "Réexaminer le dossier avec le gestionnaire et lister les pièces justificatives manquantes.",
+          "j15": "Relancer l'assuré pour obtenir les pièces demandées, avec le devis ou la facture détaillée de REP-019.",
+          "j30": "Faire le point sur les pièces reçues, puis décider de la suite de l'instruction."
+        },
+        "avertissement": "Brouillon — aucun envoi réel."
+      },
+      "trace": {
+        "tours": [
+          {
+            "phase": "analyse",
+            "numero": 1,
+            "debut_ms": 1,
+            "fin_ms": 6225,
+            "duree_ms": 6224,
+            "stop_reason": "tool_use",
+            "usage": {
+              "entree": 4,
+              "sortie": 869,
+              "cache_lecture": 2334,
+              "cache_creation": 471
+            },
+            "outils": [
+              {
+                "nom": "proposer_decision",
+                "entree": {
+                  "synthese": "Dossier routé INVESTIGATION (score 15/50) à cause d'un seul signal : le sinistre dégât des eaux a été déclaré le jour même de la souscription (0 jour). Le montant réclamé est de 10 362 € pour un plafond de 20 000 € et une franchise de 300 €. Aucun rapport de police n'est fourni, donc le recours n'a pas été évalué.",
+                  "reason_codes_commentes": [
+                    "Sinistre déclaré 0 jours après la souscription (< 30 jours) : la garantie a pu être souscrite peu avant le sinistre. Ce signal seul ne prouve rien. Il justifie de vérifier si le dommage existait déjà avant la souscription."
+                  ],
+                  "recours": {
+                    "evalue": false,
+                    "viable": false,
+                    "tiers_responsable": "",
+                    "assureur_adverse": "",
+                    "part_responsabilite_tiers_pct": 0,
+                    "certitude": "Sans objet",
+                    "elements_factuels": [
+                      "Aucun rapport de police fourni : recours non évalué."
+                    ]
+                  },
+                  "actions_proposees": [
+                    "Poursuivre l'instruction conformément au routage INVESTIGATION.",
+                    "Demander les justificatifs de la date et des circonstances du sinistre, ainsi que des photos du dommage.",
+                    "Vérifier l'état du bien et son éventuel sinistre antérieur à la souscription.",
+                    "Demander le devis ou la facture détaillée du réparateur REP-019.",
+                    "Rechercher la cause du dégât des eaux (origine, tiers éventuel) pour déterminer si un recours est possible."
+                  ],
+                  "points_d_attention": [
+                    "Le réparateur REP-019 n'est pas un signal des règles, donc son historique n'a pas été consulté. reparateur_count_90d vaut 1 et ip_count_30d vaut 0 (données d'enrichissement simulées).",
+                    "Le montant réclamé représente environ la moitié du plafond.",
+                    "Le recours n'a pas été évalué faute de rapport de police."
+                  ]
+                },
+                "sortie": "valide",
+                "duree_ms": 0
+              }
+            ]
+          },
+          {
+            "phase": "finalisation",
+            "numero": 1,
+            "debut_ms": 9706,
+            "fin_ms": 13023,
+            "duree_ms": 3317,
+            "stop_reason": "tool_use",
+            "usage": {
+              "entree": 4,
+              "sortie": 400,
+              "cache_lecture": 2805,
+              "cache_creation": 1202
+            },
+            "outils": [
+              {
+                "nom": "finaliser_dossier",
+                "entree": {
+                  "statut_final": "REJETE_PAR_GESTIONNAIRE",
+                  "synthese": "Proposition rejetée par le gestionnaire. Motif saisi : « Motif fictif d'enregistrement : pièces justificatives insuffisantes. » Le routage fraude INVESTIGATION (score 15/50, sinistre déclaré 0 jour après la souscription) reste inchangé. Le recours n'a pas été évalué faute de rapport de police.",
+                  "brouillon_courrier_recours": "",
+                  "plan_actions": {
+                    "j5": "Réexaminer le dossier avec le gestionnaire et lister les pièces justificatives manquantes.",
+                    "j15": "Relancer l'assuré pour obtenir les pièces demandées, avec le devis ou la facture détaillée de REP-019.",
+                    "j30": "Faire le point sur les pièces reçues, puis décider de la suite de l'instruction."
+                  }
+                },
+                "sortie": "valide",
+                "duree_ms": 0
+              }
+            ]
+          }
+        ],
+        "phases": [
+          {
+            "phase": "analyse",
+            "debut_ms": 0,
+            "duree_ms": 6225,
+            "issue": "pause"
+          },
+          {
+            "phase": "finalisation",
+            "debut_ms": 9706,
+            "duree_ms": 3317,
+            "issue": "termine"
+          }
+        ],
+        "corrections": [],
+        "usage_total": {
+          "entree": 6820,
+          "sortie": 1269,
+          "cache_lecture": 5139,
+          "cache_creation": 1673
+        },
+        "duree_totale_ms": 9542
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
-// Prompts de l'agent. SOURCE DE VÉRITÉ depuis le lot 1 : le dossier prompts/ à
-// la racine du dépôt est historique (Vercel ne déploie que demo-web/).
+// Prompts de l'agent. SOURCE DE VÉRITÉ. L'ancien dossier prompts/ (prototype) a
+// été supprimé ; l'historique git le garde. Vercel ne déploie que demo-web/.
 // Le prompt système est IDENTIQUE aux deux appels (analyse et finalisation) :
 // la consigne de chaque étape passe par les messages. Modifier le système entre
 // deux tours invaliderait les blocs de réflexion (guide de migration Sonnet 5.5).
