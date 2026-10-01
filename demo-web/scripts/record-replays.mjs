@@ -4,7 +4,7 @@
 //   production, mais stockage EN MÉMOIRE (jamais Upstash) et quota neutralisé.
 // - Pour réseau, précoce et recours : appel 1, puis Valider et Rejeter, rejoués
 //   depuis une copie du même état (un run_id est à usage unique) : 9 exécutions.
-// - Écrit replays/<scenario>.json (date, propositions, finalisations, trace
+// - Écrit public/replays/<scenario>.json (date, propositions, finalisations, trace
 //   client : jamais de blocs de réflexion ni de messages bruts) et les mesures
 //   HORS du dépôt.
 //
@@ -23,11 +23,11 @@ const H = require("../lib/handlers.js");
 const { creerStore } = require("../lib/store.js");
 const { PROMPT_VERSION } = require("../lib/prompts.js");
 const CONFIG = require("../config/agent.json");
-const { scenarios } = require("../scenarios.js");
+const { scenarios } = require("../public/scenarios.js");
 const { creerFauxRedis } = require("../test/helpers/faux-redis.js");
 
 const ICI = path.dirname(fileURLToPath(import.meta.url));
-const DOSSIER_REPLAYS = path.join(ICI, "..", "replays");
+const DOSSIER_REPLAYS = path.join(ICI, "..", "public", "replays");
 const FICHIER_MESURES = path.join(os.homedir(), "Documents", "dev", "tkoidra", "_captures", "fraud-1c", "mesures.json");
 const SCENARIOS_AGENT = ["reseau", "precoce", "recours"];
 const SCENARIO_FUMEE = "recours";

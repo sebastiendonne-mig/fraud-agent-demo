@@ -1,10 +1,10 @@
-// Calcule le contraste WCAG 2.1 des couples de couleurs déclarés dans index.html.
-// Les couleurs sont résolues à partir de assets/tokens.css (charte TKoidra).
+// Calcule le contraste WCAG 2.1 des couples de couleurs déclarés dans public/index.html.
+// Les couleurs sont résolues à partir de public/assets/tokens.css (charte TKoidra).
 // Usage : node scripts/contrastes.js   (affiche le tableau des ratios)
 const fs = require("fs");
 const path = require("path");
 
-const RACINE = path.join(__dirname, "..");
+const RACINE = path.join(__dirname, "..", "public");
 const SEUILS = { c: 4.5, g: 3 }; // texte normal ; élément graphique ou gros texte
 
 function luminance(hex) {

@@ -5,8 +5,9 @@ const path = require("path");
 const C = require("../scripts/contrastes.js");
 
 const RACINE = path.join(__dirname, "..");
-const HTML = fs.readFileSync(path.join(RACINE, "index.html"), "utf8");
-const APP = fs.readFileSync(path.join(RACINE, "app.js"), "utf8");
+const PUBLIC = path.join(RACINE, "public");
+const HTML = fs.readFileSync(path.join(PUBLIC, "index.html"), "utf8");
+const APP = fs.readFileSync(path.join(PUBLIC, "app.js"), "utf8");
 const VERCEL = JSON.parse(fs.readFileSync(path.join(RACINE, "vercel.json"), "utf8"));
 const texteSeul = (h) => h.replace(/<[^>]+>/g, "").replace(/\s+/g, " ");
 

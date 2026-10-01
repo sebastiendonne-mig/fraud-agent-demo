@@ -1,4 +1,5 @@
 {
+  "outputDirectory": "public",
   "functions": {
     "api/analyze.js": { "maxDuration": 240 },
     "api/finalize.js": { "maxDuration": 180 },

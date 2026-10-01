@@ -2,12 +2,14 @@
 // signalé quand l'analyse en direct n'est pas possible (quota, stockage,
 // erreur du fournisseur, refus, plafonds).
 // Chemins littéraux dans require() : ils permettent à Vercel d'embarquer les
-// fichiers dans la fonction. Un fichier absent donne null (avant le jalon 1c).
+// fichiers dans la fonction (analyse statique des require). Les rejeux vivent dans
+// public/replays/ : ils sont aussi servis au navigateur pour le repli côté client.
+// Un fichier absent (ex. stp : aucun appel IA) donne null.
 const CHARGEURS = Object.freeze({
-  stp: () => require("../replays/stp.json"),
-  reseau: () => require("../replays/reseau.json"),
-  precoce: () => require("../replays/precoce.json"),
-  recours: () => require("../replays/recours.json"),
+  stp: () => require("../public/replays/stp.json"),
+  reseau: () => require("../public/replays/reseau.json"),
+  precoce: () => require("../public/replays/precoce.json"),
+  recours: () => require("../public/replays/recours.json"),
 });
 const SCENARIO_PAR_DEFAUT = "recours";
 

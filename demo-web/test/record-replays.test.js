@@ -8,7 +8,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 const { creerFauxModele } = require("../scripts/serveur-local.js");
 const { chargerRejeu } = require("../lib/replay.js");
-const { scenarios } = require("../scenarios.js");
+const { scenarios } = require("../public/scenarios.js");
 const H = require("../lib/handlers.js");
 const F = require("./helpers/faux-anthropic.js");
 

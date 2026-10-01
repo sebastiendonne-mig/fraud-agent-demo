@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { scenarios, pvRecours } = require("../scenarios.js");
+const { scenarios, pvRecours } = require("../public/scenarios.js");
 
 // "JJ/MM/AAAA" → "AAAA-MM-JJ"
 const iso = (fr) => fr.split("/").reverse().join("-");

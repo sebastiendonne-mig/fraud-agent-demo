@@ -1,4 +1,4 @@
-// Les rejeux enregistrés (replays/*.json) sont servis au visiteur en repli :
+// Les rejeux enregistrés (public/replays/*.json) sont servis au visiteur en repli :
 // ce test vérifie leur forme, leur cohérence avec les règles et l'absence de
 // contenu interdit. Il se déclenche si les règles ou les scénarios changent sans
 // ré-enregistrement.
@@ -9,7 +9,7 @@ const path = require("path");
 const { chargerRejeu } = require("../lib/replay.js");
 const { evaluerDossier } = require("../lib/regles.js");
 const { trier } = require("../lib/triage.js");
-const { scenarios } = require("../scenarios.js");
+const { scenarios } = require("../public/scenarios.js");
 const { PROMPT_VERSION } = require("../lib/prompts.js");
 
 const ATTENDU = {
@@ -17,7 +17,7 @@ const ATTENDU = {
   precoce: { routage: "INVESTIGATION", score: 15, mode: "instruction" },
   recours: { routage: "STP", score: 0, mode: "recours_seul" },
 };
-const DOSSIER = path.join(__dirname, "..", "replays");
+const DOSSIER = path.join(__dirname, "..", "public", "replays");
 
 for (const [nom, attendu] of Object.entries(ATTENDU)) {
   test(`rejeu ${nom} : forme, routage des règles, finalisations, aucun contenu interdit`, () => {

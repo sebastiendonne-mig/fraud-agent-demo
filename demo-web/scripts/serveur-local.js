@@ -15,11 +15,11 @@ const CONFIG = require("../config/agent.json");
 const F = require("../test/helpers/faux-anthropic.js");
 const { creerFauxRedis } = require("../test/helpers/faux-redis.js");
 
-const RACINE = path.join(__dirname, "..");
+const RACINE = path.join(__dirname, "..", "public"); // seule la partie publique est servie
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".json": "application/json; charset=utf-8" };
 const ASSETS = new Set(fs.readdirSync(path.join(RACINE, "assets")));
 
-// Rejeu FICTIF, uniquement pour les essais locaux (jamais écrit dans replays/)
+// Rejeu FICTIF, uniquement pour les essais locaux (jamais écrit dans public/replays/)
 const REJEU_FICTIF = {
   enregistre_le: "01/10/2026 [rejeu fictif de test local]",
   analyse: {
