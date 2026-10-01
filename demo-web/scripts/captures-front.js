@@ -134,6 +134,37 @@ async function main() {
       await attendreQue(visible("quotaRestant"));
       await capturer("formulaire", largeur);
 
+      // 1 bis. Pastilles : chacune renseigne TOUS les champs, compteurs simulés compris,
+      // et le dossier envoyé donne le score et le routage attendus.
+      const ATTENDUS = { stp: [0, "Traitement automatique"], reseau: [30, "Alerte SIU"], precoce: [15, "Investigation"], recours: [0, "Traitement automatique"] };
+      for (const [nom, [score, routage]] of Object.entries(ATTENDUS)) {
+        await ouvrir();
+        await cliquer(`[data-scenario="${nom}"]`);
+        const champs = await evaluer("['reparateur_count_90d', 'ip_count_30d', 'id_reparateur'].map((i) => document.getElementById(i).value).join('|')");
+        await cliquer("#boutonAnalyser");
+        await attendreQue(visible("resultat"));
+        const s = await evaluer("document.getElementById('scoreValeur').textContent");
+        const r = await evaluer("document.getElementById('routage').textContent");
+        verifier(`pastille ${nom}-${largeur} : ${score}/50, ${routage}`, s === String(score) && r.includes(routage), `compteurs|réparateur=${champs} score=${s} routage=${r}`);
+      }
+      await controle("quota=normal");
+
+      // 1 ter. Formulaire par défaut et après « Réinitialiser » : compteurs à 0, l'agent n'est pas déclenché
+      for (const etapeReset of [false, true]) {
+        await ouvrir();
+        if (etapeReset) {
+          await cliquer('[data-scenario="reseau"]');
+          await cliquer("#boutonReinitialiser");
+        }
+        const compteurs = await evaluer("['reparateur_count_90d', 'ip_count_30d'].map((i) => document.getElementById(i).value).join('|')");
+        verifier(`defaut${etapeReset ? "-apres-reinitialiser" : ""}-${largeur} : compteurs à 0`, compteurs === "0|0", `compteurs=${compteurs}`);
+        await cliquer("#boutonAnalyser");
+        await attendreQue(visible("resultat"));
+        const badge = await evaluer("document.getElementById('badge').textContent");
+        verifier(`defaut${etapeReset ? "-apres-reinitialiser" : ""}-${largeur} : règles seules, aucun appel IA`, badge === "Règles seules — aucun appel IA", badge);
+      }
+      await controle("quota=normal");
+
       // 2. Attente (latence allongée)
       await controle("latence=5000");
       await cliquer('[data-scenario="reseau"]');

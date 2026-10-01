@@ -40,14 +40,15 @@ dossier ──▶ validation stricte ──▶ règles (score /50) ──▶ tri
 
 ## Rejeux, coûts et durées mesurés (01/10/2026)
 
-- `demo-web/replays/{reseau,precoce,recours}.json` : exécutions **réelles** enregistrées par `demo-web/scripts/record-replays.mjs` (modèle `claude-sonnet-5-5`, prompt 2026-10-01, effort `low`). Elles ne contiennent que la proposition, les finalisations et la trace client (jamais de blocs de réflexion). Servies en repli, avec un bandeau daté. Le script est **payant** : refuse de démarrer sans `--yes` et sans clé dans l'environnement, ne lit aucun `.env`.
+- `demo-web/public/replays/{reseau,precoce,recours}.json` : exécutions **réelles** enregistrées par `demo-web/scripts/record-replays.mjs` (modèle `claude-sonnet-5-5`, prompt 2026-10-01, effort `low`). Elles ne contiennent que la proposition, les finalisations et la trace client (jamais de blocs de réflexion). Servies en repli, avec un bandeau daté. Le script est **payant** : refuse de démarrer sans `--yes` et sans clé dans l'environnement, ne lit aucun `.env`.
 - Mesures (3 scénarios fictifs) : environ 0,02 $ par analyse complète (0,0219 $ en moyenne ; pire cas observé 0,0307 $ au premier appel après inactivité, cache de prompt froid), 6 à 10 s pour l'analyse (jusqu'à ~18 s à cache froid), 3 à 6 s pour la finalisation, 1 à 2 tours selon le dossier.
 - Durée annoncée au visiteur : « généralement 10 à 20 secondes », **provisoire** jusqu'à la vérification en prévisualisation.
 - Tarif de référence : `config/agent.json` (source citée) ; à revérifier avant toute décision budgétaire.
 
 ## Structure
 
-- `demo-web/` — page statique (`index.html`, `app.js`, `scenarios.js`) et fonctions Vercel (`api/analyze.js`, `api/finalize.js`, `api/quota.js`) ; `lib/` (règles, triage, outils, agent, stockage, handlers), `config/`, `data/`, `replays/`, `test/`, `scripts/`
+- `demo-web/public/` — **seule partie servie publiquement** (`outputDirectory` de `vercel.json`) : `index.html`, `app.js`, `scenarios.js`, `assets/`, `replays/`. Tout ce qui est hors de `public/` (`lib/`, `config/`, `data/`, `package.json`…) n'est jamais servi ; les fonctions Vercel (`api/analyze.js`, `api/finalize.js`, `api/quota.js`, à la racine de `demo-web/`) en embarquent leur copie par analyse statique des `require`. Ne rien mettre de privé dans `public/` (un test le vérifie).
+- `demo-web/` — aussi `lib/` (règles, triage, outils, agent, stockage, handlers), `config/`, `data/`, `test/`, `scripts/`
 - `ml/` — scoring de référence (règles + régression logistique) et features documentées. La régression logistique n'est ni exécutée ni affichée par la démo (partie probabiliste prévue au lot 2)
 - `data-mock/` — données fictives (sinistres, polices, procès-verbaux, scores)
 - `scripts/` — générateur de données reproductible (l'ancien `test-prompts.py`, prototype appelant l'API payante, a été supprimé ; l'historique git le garde)

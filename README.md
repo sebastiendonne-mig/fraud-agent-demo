@@ -41,7 +41,7 @@ dossier ──▶ validation stricte ──▶ règles (score /50) ──▶ tri
 
 ## Garde-fous
 
-Chacun est couvert par un test automatisé (`npm test`, 124 tests, sans réseau ni clé) :
+Chacun est couvert par un test automatisé (`npm test`, 141 tests, sans réseau ni clé) :
 
 - entrées strictement validées (champs inconnus refusés, bornes, longueurs) ;
 - STP sans rapport de police : **aucun appel au modèle**, aucun quota consommé ;
@@ -74,8 +74,9 @@ Les données saisies sont envoyées à Anthropic, qui les conserve **jusqu'à 30
 
 ```
 fraud-agent-demo/
-├── demo-web/       démo : page (index.html, app.js, scenarios.js), fonctions Vercel (api/),
-│                   lib/ (règles, triage, outils, agent, stockage), config/, replays/, test/, scripts/
+├── demo-web/       démo : public/ (seule partie servie : page, scripts, ressources, rejeux),
+│                   fonctions Vercel (api/), lib/ (règles, triage, outils, agent, stockage),
+│                   config/, data/, test/, scripts/
 ├── ml/             scoring de référence (règles + régression logistique) et features
 ├── data-mock/      données fictives (sinistres, polices, procès-verbaux, scores)
 ├── scripts/        générateur de données reproductible
@@ -91,7 +92,7 @@ Prérequis : Node 24 et npm (démo) ; Python 3.10+ avec `scikit-learn pandas num
 ```bash
 cd demo-web
 npm install
-npm test                          # 124 tests, aucun accès réseau
+npm test                          # 141 tests, aucun accès réseau
 node scripts/serveur-local.js     # démo locale, API simulée, sans clé ni coût
 ```
 
