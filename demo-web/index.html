@@ -36,6 +36,7 @@
       --c-badge-regles-texte: var(--tk-navy);   --c-badge-regles-fond: var(--tk-gray-100);
       --c-pied-texte: var(--tk-white);          --c-pied-fond: var(--tk-navy);
       --c-pied-lien-texte: var(--tk-cyan-light); --c-pied-lien-fond: var(--tk-navy);
+      --c-desactive-texte: var(--tk-gray-600);  --c-desactive-fond: var(--tk-gray-200);
 
       --g-champ-trait: var(--tk-gray-600);      --g-champ-fond: var(--tk-white);
       --g-bouton2-trait: var(--tk-navy);        --g-bouton2-fond: var(--tk-white);
@@ -50,7 +51,6 @@
       --d-stp: var(--tk-cyan);
       --d-investigation: var(--tk-navy-light);
       --d-siu: var(--tk-navy);
-      --d-desactive: var(--tk-gray-200);
     }
 
     body {
@@ -157,7 +157,7 @@
     .bouton { background: var(--c-bouton-fond); color: var(--c-bouton-texte); border: 1px solid var(--c-bouton-fond); }
     .bouton:hover:not(:disabled) { background: var(--c-bouton-survol-fond); color: var(--c-bouton-survol-texte); }
     .bouton2 { background: var(--c-bouton2-fond); color: var(--c-bouton2-texte); border: 1px solid var(--g-bouton2-trait); }
-    .bouton:disabled, .bouton2:disabled { background: var(--d-desactive); border-color: var(--d-desactive); cursor: not-allowed; }
+    .bouton:disabled, .bouton2:disabled { background: var(--c-desactive-fond); color: var(--c-desactive-texte); border-color: var(--c-desactive-fond); cursor: not-allowed; }
 
     .attente { display: flex; align-items: center; gap: var(--tk-space-3); margin-top: var(--tk-space-4); color: var(--c-titre-texte); font-weight: var(--tk-weight-medium); }
     .roue { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--d-piste); border-top-color: var(--g-contour-trait); animation: tourne .9s linear infinite; }
@@ -176,7 +176,7 @@
     .bandeau { width: 100%; background: var(--c-encart-fond); color: var(--c-encart-texte); border-left: 4px solid var(--g-encart-trait); border-radius: var(--tk-radius-md); padding: var(--tk-space-3) var(--tk-space-4); font-weight: var(--tk-weight-medium); }
 
     .score { display: flex; flex-wrap: wrap; gap: var(--tk-space-6); align-items: center; }
-    .jauge { width: 220px; max-width: 100%; }
+    .jauge { width: 290px; max-width: 100%; }
     .jauge svg { width: 100%; height: auto; display: block; }
     .jauge .piste-bord { stroke: var(--g-piste-trait); }
     .jauge .piste { stroke: var(--d-piste); }
@@ -302,8 +302,8 @@
         <fieldset class="enrichissement">
           <legend>Données d'enrichissement (simulées)</legend>
           <div class="grille">
-            <div class="champ"><label for="reparateur_count_90d">Autres dossiers du même réparateur (90 j)</label><input type="number" id="reparateur_count_90d" value="2" min="0" max="50" /></div>
-            <div class="champ"><label for="ip_count_30d">Autres déclarations depuis la même IP (30 j)</label><input type="number" id="ip_count_30d" value="1" min="0" max="50" /></div>
+            <div class="champ"><label for="reparateur_count_90d">Autres dossiers du même réparateur (90&nbsp;j)</label><input type="number" id="reparateur_count_90d" value="2" min="0" max="50" /></div>
+            <div class="champ"><label for="ip_count_30d">Autres déclarations depuis la même IP (30&nbsp;j)</label><input type="number" id="ip_count_30d" value="1" min="0" max="50" /></div>
           </div>
         </fieldset>
         <div class="champ large">
