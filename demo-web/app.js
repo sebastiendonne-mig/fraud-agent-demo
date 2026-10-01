@@ -236,13 +236,13 @@ function afficherProposition(p, corrections, titre) {
     zone.append(el("p", { texte: "Recours non évalué (aucun rapport de police exploitable)." }));
   } else {
     const montant = el("span", { texte: r.montant_recuperable === null || r.montant_recuperable === undefined ? "—" : euros(r.montant_recuperable) });
-    montant.append(el("span", { classe: "note-code", texte: " (calculé par le code, pas par le modèle)" }));
+    montant.append(el("span", { classe: "note-code", texte: " (calculé par le code ; montant brut, franchise non traitée dans cette démo)" }));
     zone.append(champs([
       ["Recours viable", r.viable ? "Oui" : "Non"],
       ["Tiers responsable", r.tiers_responsable || "Non identifié"],
       ["Assureur adverse", r.assureur_adverse || "Non mentionné"],
       ["Part de responsabilité du tiers", `${r.part_responsabilite_tiers_pct} %`],
-      ["Montant récupérable", montant],
+      ["Montant récupérable (brut)", montant],
       ["Seuil minimal de recours", r.seuil_euros ? euros(r.seuil_euros) : "—"],
       ["Certitude", r.certitude || "—"],
     ]));

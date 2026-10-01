@@ -103,3 +103,11 @@ test("scénarios : source unique scenarios.js, chargée avant app.js", () => {
   assert.match(APP, /window\.ScenariosDemo\.scenarios\(\)/);
   assert.doesNotMatch(APP, /PROCÈS-VERBAL/, "aucune copie des scénarios dans app.js");
 });
+
+test("montant de recours libellé brut, franchise non traitée annoncée ; compteurs simulés", () => {
+  assert.match(APP, /\["Montant récupérable \(brut\)", montant\]/);
+  assert.match(APP, /montant brut, franchise non traitée dans cette démo/);
+  assert.match(texteSeul(HTML), /Le montant de recours affiché est un montant brut : la franchise n'est pas traitée dans cette démo\./);
+  assert.match(HTML, /Dossiers du même réparateur sur 90&nbsp;jours \(compteur simulé\)/);
+  assert.match(HTML, /Déclarations depuis la même IP sur 30&nbsp;jours \(compteur simulé\)/);
+});

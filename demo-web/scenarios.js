@@ -13,9 +13,19 @@
     return `${d.getFullYear()}-${deux(d.getMonth() + 1)}-${deux(d.getDate())}`;
   }
 
-  const PV_RECOURS = `PROCÈS-VERBAL N° PV-2024-0012
+  // "AAAA-MM-JJ" → "JJ/MM/AAAA"
+  function dateFr(iso) {
+    const [a, m, j] = iso.split("-");
+    return `${j}/${m}/${a}`;
+  }
+
+  // PV du scénario recours : daté du jour du sinistre (2 jours avant la déclaration),
+  // pour rester cohérent avec les dates du dossier.
+  function pvRecours(dateSinistreIso) {
+    const annee = dateSinistreIso.slice(0, 4);
+    return `PROCÈS-VERBAL N° PV-${annee}-0012
 Service : Unité fictive de démonstration
-Date : 14/03/2024 — 09h47
+Date : ${dateFr(dateSinistreIso)} — 09h47
 
 CIRCONSTANCES : Collision en intersection réglementée par feux tricolores.
 Le véhicule de M. Laurent MARTIN (assuré, plaque DEMO-101) circulait sur voie principale,
@@ -25,9 +35,10 @@ a grillé le feu rouge en tournant à gauche et a percuté l'avant droit du véh
 TÉMOINS : Mme Sophie ROUSSEAU confirme que M. BENALI a brûlé le feu rouge.
 
 RESPONSABILITÉ : M. BENALI (tiers) responsable à 100 %. Aucun partage de responsabilité.
-Dommages matériels : 5 652 € (devis garage MARTIN & Fils). Dommages corporels : néant.
+Dommages matériels : 5 652 € (devis du réparateur REP-031). Dommages corporels : néant.
 
 Signé : Agent fictif — Unité fictive de démonstration`;
+  }
 
   function scenarios(aujourdHui = new Date()) {
     const j = (n) => joursAvant(n, aujourdHui);
@@ -50,12 +61,12 @@ Signé : Agent fictif — Unité fictive de démonstration`;
       recours: {
         id_police: "POL-78901", type_sinistre: "accident_auto", montant_reclame: 5652, montant_plafond: 25000,
         franchise: 500, date_declaration: j(12), date_souscription: j(900),
-        id_reparateur: "REP-031", reparateur_count_90d: 1, ip_count_30d: 0, rapport_police: PV_RECOURS,
+        id_reparateur: "REP-031", reparateur_count_90d: 1, ip_count_30d: 0, rapport_police: pvRecours(j(14)),
       },
     };
   }
 
-  const api = { scenarios, joursAvant, PV_RECOURS };
+  const api = { scenarios, joursAvant, pvRecours };
   if (typeof module === "object" && module.exports) module.exports = api;
   else racine.ScenariosDemo = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -80,8 +80,9 @@ test("client réel : non créé si la configuration manque, jamais journalisé",
   assert.equal(journal.join("\n").includes("SENTINELLE"), false);
 });
 
-test("rejeu : fichier absent → null (avant le jalon 1c), scénario inconnu → scénario par défaut", () => {
-  assert.equal(chargerRejeu("reseau"), null);
+test("rejeu : fichier absent → null, scénario inconnu → scénario par défaut", () => {
+  const absent = () => { throw Object.assign(new Error("absent"), { code: "MODULE_NOT_FOUND" }); };
+  assert.equal(chargerRejeu("reseau", { reseau: absent }), null);
   const faux = { recours: () => ({ enregistre_le: "2026-10-01" }), reseau: () => ({ enregistre_le: "x" }) };
   assert.deepEqual(chargerRejeu("inconnu", faux), { scenario: "recours", contenu: { enregistre_le: "2026-10-01" } });
   assert.equal(chargerRejeu("reseau", faux).scenario, "reseau");

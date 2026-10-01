@@ -128,6 +128,7 @@ function rechercherHistoriqueReparateur(entree, _contexte, portefeuille = PORTEF
     nombre_dossiers: dossiers.length,
     dossiers: dossiers.slice(0, 15),
     source: "portefeuille fictif de démonstration",
+    periode: "2024 — portefeuille fictif historique, non aligné sur la date du dossier",
   };
 }
 
@@ -144,6 +145,7 @@ function calculerMontantRecours(entree, contexte, _portefeuille, config = REGLES
     montant_recuperable: recuperable,
     seuil_recours_euros: config.recours.seuil_euros,
     au_dessus_du_seuil: recuperable >= config.recours.seuil_euros,
+    franchise: "non traitée dans cette démo (montant brut)",
   };
 }
 

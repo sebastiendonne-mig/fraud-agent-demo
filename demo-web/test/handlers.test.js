@@ -133,6 +133,7 @@ test("quota atteint : rejeu signalé, sans appel au modèle ; sans rejeu → ind
 });
 
 test("stockage en panne ou absent : repli, sans appel au modèle", async () => {
+  H._definirChargeurRejeu(() => null); // indépendant des rejeux présents dans replays/
   const m = monter({ script: scriptRecours() });
   m.redis.tomberEnPanne();
   const r = (await appeler(m.analyse, dossier("recours"))).json();

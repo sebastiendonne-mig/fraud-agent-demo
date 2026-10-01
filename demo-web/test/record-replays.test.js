@@ -8,7 +8,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 const { creerFauxModele } = require("../scripts/serveur-local.js");
 const { chargerRejeu } = require("../lib/replay.js");
-const { scenarios, PV_RECOURS } = require("../scenarios.js");
+const { scenarios } = require("../scenarios.js");
 const H = require("../lib/handlers.js");
 const F = require("./helpers/faux-anthropic.js");
 
@@ -122,7 +122,7 @@ test("détection des marques réelles et des plaques SIV dans les rejeux (signal
   const { executer } = await charger();
   const lesScenarios = scenarios();
   lesScenarios.recours.rapport_police =
-    "Assuré AXA, plaque AB-123-CD. Covéa et Crédit Agricole Assurances cités.\n" + PV_RECOURS;
+    "Assuré AXA, plaque AB-123-CD. Covéa et Crédit Agricole Assurances cités.\n" + lesScenarios.recours.rapport_police;
   const dossier = dossierTemp();
   const m = await executer({ client: fauxClient(), lesScenarios, dossierReplays: dossier, fichierMesures: path.join(dossierTemp(), "m.json"), journal: silencieux });
   assert.equal(m.fichiers_ecrits.length, 3, "la détection ne bloque pas l'écriture");
