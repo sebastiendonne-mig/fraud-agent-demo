@@ -115,7 +115,7 @@ test("montant de recours libellé brut, franchise non traitée annoncée ; compt
 
 test("« Chiffres mesurés le 01/10/2026 » : coût, durées et tours datés, dans « Comment ça marche »", () => {
   const bloc = texteSeul(HTML.slice(HTML.indexOf('class="etapes-explication"'), HTML.indexOf("</ol>", HTML.indexOf('class="etapes-explication"'))));
-  assert.match(bloc, /Chiffres mesurés le 01\/10\/2026\. Environ 0,02 à 0,03 \$ par analyse complète \(plus élevé au premier appel après une période d'inactivité, cache de prompt froid\), 6 à 10 s pour l'analyse et 3 à 6 s pour la finalisation, 1 à 2 tours selon le ddossier, mesurés sur 3 scénarios fictifs\./);
+  assert.match(bloc, /Chiffres mesurés le 01\/10\/2026\. Environ 0,02 à 0,03 \$ par analyse complète \(plus élevé au premier appel après une période d'inactivité, cache de prompt froid\), 6 à 10 s pour l'analyse et 3 à 6 s pour la finalisation, 1 à 2 tours selon le dossier, mesurés sur 3 scénarios fictifs\./);
 });
 
 test("budgets de temps inchangés : 180 / 120 s, maxDuration 240 / 180 s", () => {
