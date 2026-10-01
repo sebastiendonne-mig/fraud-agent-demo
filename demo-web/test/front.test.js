@@ -95,3 +95,11 @@ test("formule de contraste conforme aux valeurs de référence (noir/blanc 21:1)
   assert.equal(C.ratio("#000000", "#FFFFFF").toFixed(2), "21.00");
   assert.equal(C.ratio("#FFFFFF", "#FFFFFF").toFixed(2), "1.00");
 });
+
+test("scénarios : source unique scenarios.js, chargée avant app.js", () => {
+  const iScenarios = HTML.indexOf('<script src="scenarios.js"');
+  const iApp = HTML.indexOf('<script src="app.js"');
+  assert.ok(iScenarios > 0 && iScenarios < iApp);
+  assert.match(APP, /window\.ScenariosDemo\.scenarios\(\)/);
+  assert.doesNotMatch(APP, /PROCÈS-VERBAL/, "aucune copie des scénarios dans app.js");
+});

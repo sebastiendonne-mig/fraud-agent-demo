@@ -150,6 +150,7 @@ function demarrer({ port = 0 } = {}) {
     let fichier = null;
     if (chemin === "/" || chemin === "/index.html") fichier = "index.html";
     else if (chemin === "/app.js") fichier = "app.js";
+    else if (chemin === "/scenarios.js") fichier = "scenarios.js";
     else if (chemin.startsWith("/assets/") && ASSETS.has(chemin.slice(8))) fichier = path.join("assets", chemin.slice(8));
     else if (/^\/replays\/[a-z]+\.json$/.test(chemin) && controle.rejeuStatique) {
       res.writeHead(200, { "content-type": TYPES[".json"] });
@@ -175,4 +176,4 @@ if (require.main === module) {
   demarrer({ port: Number(process.argv[2] || 8765) }).then(({ adresse }) => console.log(`Démo locale (API simulée, sans réseau) : ${adresse}`));
 }
 
-module.exports = { demarrer, REJEU_FICTIF };
+module.exports = { demarrer, creerFauxModele, REJEU_FICTIF };

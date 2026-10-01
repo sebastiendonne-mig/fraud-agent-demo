@@ -4,16 +4,35 @@
   "effort": "low",
   "max_tokens_par_tour": 4096,
   "max_tokens_min_par_tour": 1024,
-  "tours_max": { "analyse": 6, "finalisation": 3 },
-  "plafond_tokens_analyse": { "entree": 120000, "sortie": 16000 },
+  "tours_max": {
+    "analyse": 6,
+    "finalisation": 3
+  },
+  "plafond_tokens_analyse": {
+    "entree": 120000,
+    "sortie": 16000
+  },
   "temps": {
-    "analyse": { "budget_ms": 180000, "reserve_par_tour_ms": 60000 },
-    "finalisation": { "budget_ms": 120000, "reserve_par_tour_ms": 60000 },
+    "analyse": {
+      "budget_ms": 180000,
+      "reserve_par_tour_ms": 60000
+    },
+    "finalisation": {
+      "budget_ms": 120000,
+      "reserve_par_tour_ms": 60000
+    },
     "marge_timeout_ms": 5000
   },
   "quota_jour": 3,
   "_quota_jour": "PROVISOIRE : à recalculer au jalon 1c avec quota_jour = budget_mensuel / (30 × coût mesuré par analyse).",
   "fuseau_quota": "Europe/Paris",
   "ttl_run_s": 1800,
-  "ttl_quota_s": 172800
+  "ttl_quota_s": 172800,
+  "tarif_usd_par_million": {
+    "entree": 2,
+    "sortie": 10,
+    "cache_lecture": 0.2,
+    "cache_ecriture_5min": 2.5
+  },
+  "_tarif": "Claude Sonnet 5.5, Claude API : guide de migration Sonnet 5.5 de la doc officielle embarquée dans la skill claude-api (model-migration.md:2076), mise en cache le 25/09/2026. À revérifier sur la page de tarifs avant toute décision budgétaire."
 }
