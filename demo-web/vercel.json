@@ -1,6 +1,7 @@
 {
   "functions": {
     "api/analyze.js": { "maxDuration": 240 },
-    "api/finalize.js": { "maxDuration": 180 }
+    "api/finalize.js": { "maxDuration": 180 },
+    "api/quota.js": { "maxDuration": 10 }
   }
 }

@@ -29,10 +29,12 @@ async function lireCorps(req) {
   }
 }
 
-function repondre(res, statut, donnees) {
+// Par défaut aucune mise en cache ; `cache` permet un en-tête explicite
+// (ex. point d'accès du quota, mis en cache 60 s par le CDN de Vercel).
+function repondre(res, statut, donnees, { cache = "no-store" } = {}) {
   res.statusCode = statut;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Cache-Control", cache);
   res.end(JSON.stringify(donnees));
 }
 

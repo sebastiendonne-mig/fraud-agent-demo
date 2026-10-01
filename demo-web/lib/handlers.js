@@ -85,6 +85,7 @@ function creerHandlerAnalyse(deps) {
         return repli("stockage_indisponible");
       }
       if (!quota.autorise) return repli("quota_atteint");
+      const quotaRestant = { restantes: Math.max(0, quota.limite - quota.utilisees), limite: quota.limite };
 
       const etat = await runLoop(
         creerEtat({ dossier, regles: { score: regles.score, reason_codes: regles.reason_codes }, routage, mode }, deps.now),
@@ -100,7 +101,7 @@ function creerHandlerAnalyse(deps) {
       }
       return repondre(res, 200, {
         mode: "direct", ...commun, mode_agent: mode, modele: config.modele,
-        run_id: runId, proposition: etat.proposition, trace: traceClient(etat),
+        run_id: runId, quota: quotaRestant, proposition: etat.proposition, trace: traceClient(etat),
       });
     } catch {
       return repli("erreur_interne");
@@ -156,6 +157,26 @@ function creerHandlerFinalisation(deps) {
   };
 }
 
+// ── Quota restant (lecture seule) ─────────────────────────────────────────
+// Mis en cache 60 s par le CDN de Vercel (s-maxage) : au plus une lecture
+// Redis par minute et par région, jamais une par chargement de page.
+// En cas d'échec : 503 sans cache, et le front n'affiche rien.
+const CACHE_QUOTA = "public, max-age=0, s-maxage=60";
+
+function creerHandlerQuota(deps) {
+  return async function quota(req, res) {
+    try {
+      if (req.method !== "GET") return repondre(res, 405, { erreur: "methode_non_autorisee" });
+      const store = deps.store();
+      if (!store) return repondre(res, 503, { erreur: "indisponible" });
+      const { restantes, limite } = await store.lireQuota(deps.now());
+      return repondre(res, 200, { restantes, limite }, { cache: CACHE_QUOTA });
+    } catch {
+      return repondre(res, 503, { erreur: "indisponible" });
+    }
+  };
+}
+
 // Dépendances réelles, créées à la demande (aucun accès réseau au chargement).
 // Les secrets ne servent qu'à construire les clients : jamais affichés ni journalisés.
 function depsReelles(env = process.env) {
@@ -189,4 +210,4 @@ function _definirChargeurRejeu(f) {
   chargerRejeuSur = f || chargerRejeu;
 }
 
-module.exports = { creerHandlerAnalyse, creerHandlerFinalisation, depsReelles, MESSAGE_INDISPONIBLE, _definirChargeurRejeu };
+module.exports = { creerHandlerAnalyse, creerHandlerFinalisation, creerHandlerQuota, CACHE_QUOTA, depsReelles, MESSAGE_INDISPONIBLE, _definirChargeurRejeu };

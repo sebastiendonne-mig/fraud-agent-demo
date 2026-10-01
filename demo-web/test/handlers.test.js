@@ -37,7 +37,10 @@ function monter({ script = [], env = "production", sansClient = false, sansStore
     store: () => { compteurs.store++; return sansStore ? null : creerStore({ redis, env }); },
     client: () => { compteurs.client++; return sansClient ? null : client; },
   };
-  return { horloge, redis, client, compteurs, analyse: H.creerHandlerAnalyse(deps), finalise: H.creerHandlerFinalisation(deps) };
+  return {
+    horloge, redis, client, compteurs,
+    analyse: H.creerHandlerAnalyse(deps), finalise: H.creerHandlerFinalisation(deps), quota: H.creerHandlerQuota(deps),
+  };
 }
 
 const dossier = (nom) => ({ ...scenarios()[nom], scenario: nom });
@@ -174,6 +177,34 @@ test("exception imprévue hors du modèle : repli « erreur_interne »", async (
   assert.equal(res.json().motif, "erreur_interne");
 });
 
+// ── Quota ────────────────────────────────────────────────────────────────
+test("quota : lecture seule, mise en cache CDN 60 s, aucune clé créée", async () => {
+  const m = monter();
+  const res = await appeler(m.quota, undefined, "GET");
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.json(), { restantes: CONFIG.quota_jour, limite: CONFIG.quota_jour });
+  assert.equal(res.headers["cache-control"], "public, max-age=0, s-maxage=60");
+  assert.deepEqual(m.redis.cles(), []);
+  assert.equal((await appeler(m.quota, {}, "POST")).statusCode, 405);
+});
+
+test("quota : stockage en panne ou absent → 503 sans mise en cache", async () => {
+  const m = monter();
+  m.redis.tomberEnPanne();
+  const res = await appeler(m.quota, undefined, "GET");
+  assert.equal(res.statusCode, 503);
+  assert.equal(res.headers["cache-control"], "no-store");
+  assert.equal((await appeler(monter({ sansStore: true }).quota, undefined, "GET")).statusCode, 503);
+});
+
+test("analyse en direct : la réponse donne le quota restant après l'incrément", async () => {
+  const m = monter({ script: scriptRecours() });
+  const r = (await appeler(m.analyse, dossier("recours"))).json();
+  assert.deepEqual(r.quota, { restantes: CONFIG.quota_jour - 1, limite: CONFIG.quota_jour });
+  const q = (await appeler(m.quota, undefined, "GET")).json();
+  assert.equal(q.restantes, CONFIG.quota_jour - 1);
+});
+
 // ── Finalisation ─────────────────────────────────────────────────────────
 test("finalisation : valider → termine ; le même run_id réutilisé → 410", async () => {
   const m = monter({ script: [...scriptRecours(), { reponse: F.reponse([F.appelOutil("finaliser_dossier", F.finalisationValide())]) }] });
@@ -223,6 +254,7 @@ test("vercel.json : maxDuration au-dessus du budget interne et ≤ 300 s, plus d
   const f = v.functions["api/finalize.js"].maxDuration;
   assert.ok(a * 1000 > CONFIG.temps.analyse.budget_ms && a <= 300);
   assert.ok(f * 1000 > CONFIG.temps.finalisation.budget_ms && f <= 300);
+  assert.ok(v.functions["api/quota.js"].maxDuration <= 10);
   assert.equal(v.rewrites, undefined);
   for (const ancien of ["api/proxy.js", "api/check.js", "server.py"]) {
     assert.equal(fs.existsSync(path.join(__dirname, "..", ancien)), false, ancien);
@@ -272,6 +304,7 @@ test("les secrets ne sont lus qu'à la construction des clients (lib/ et api/)",
 test("les points d'entrée api/ se chargent sans réseau ni variables d'environnement", async () => {
   const analyse = require("../api/analyze.js");
   const finalise = require("../api/finalize.js");
+  assert.equal(typeof require("../api/quota.js"), "function");
   assert.equal(typeof analyse, "function");
   assert.equal(typeof finalise, "function");
   const r = (await appeler(analyse, dossier("stp"))).json();
