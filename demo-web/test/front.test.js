@@ -48,7 +48,7 @@ test("bloc d'information du visiteur : 5 phrases exactes, placé avant le bouton
 
 test("« Comment ça marche » : 6 points dont « Limites », seuils présentés comme un choix de démo", () => {
   const bloc = HTML.slice(HTML.indexOf('class="etapes-explication"'), HTML.indexOf("</ol>", HTML.indexOf('class="etapes-explication"')));
-  assert.equal((bloc.match(/<li>/g) || []).length, 6);
+  assert.equal((bloc.match(/<li>/g) || []).length, 7);
   assert.match(bloc, /Limites\./);
   assert.match(texteSeul(bloc), /choix de démonstration, non calibré sur des données réelles/);
   assert.match(texteSeul(bloc), /pas un outil de production/);
@@ -59,7 +59,8 @@ test("délais du client = maxDuration de vercel.json + 5 s ; durée annoncée ma
   const delais = APP.match(/DELAI_MS = \{ analyse: (\d+), finalisation: (\d+)/);
   assert.equal(Number(delais[1]), VERCEL.functions["api/analyze.js"].maxDuration * 1000 + 5000);
   assert.equal(Number(delais[2]), VERCEL.functions["api/finalize.js"].maxDuration * 1000 + 5000);
-  assert.match(APP, /PROVISOIRE — recalée au jalon 1c[^\n]*\nconst DUREE_ANNONCEE_S = \d+;/);
+  assert.match(APP, /PROVISOIRE jusqu'à la vérification en prévisualisation[\s\S]*?\nconst DUREE_ANNONCEE = "généralement 10 à 20 secondes";/);
+  assert.match(APP, /`Analyse en cours — \$\{DUREE_ANNONCEE\}\.`/);
 });
 
 test("mentions obligatoires présentes : brouillon sans envoi, badges, motif limité à 500 caractères", () => {
@@ -110,4 +111,17 @@ test("montant de recours libellé brut, franchise non traitée annoncée ; compt
   assert.match(texteSeul(HTML), /Le montant de recours affiché est un montant brut : la franchise n'est pas traitée dans cette démo\./);
   assert.match(HTML, /Dossiers du même réparateur sur 90&nbsp;jours \(compteur simulé\)/);
   assert.match(HTML, /Déclarations depuis la même IP sur 30&nbsp;jours \(compteur simulé\)/);
+});
+
+test("« Chiffres mesurés le 01/10/2026 » : coût, durées et tours datés, dans « Comment ça marche »", () => {
+  const bloc = texteSeul(HTML.slice(HTML.indexOf('class="etapes-explication"'), HTML.indexOf("</ol>", HTML.indexOf('class="etapes-explication"'))));
+  assert.match(bloc, /Chiffres mesurés le 01\/10\/2026\. Environ 0,02 à 0,03 \$ par analyse complète \(plus élevé au premier appel après une période d'inactivité, cache de prompt froid\), 6 à 10 s pour l'analyse et 3 à 6 s pour la finalisation, 1 à 2 tours selon le ddossier, mesurés sur 3 scénarios fictifs\./);
+});
+
+test("budgets de temps inchangés : 180 / 120 s, maxDuration 240 / 180 s", () => {
+  const CONFIG = require("../config/agent.json");
+  assert.equal(CONFIG.temps.analyse.budget_ms, 180000);
+  assert.equal(CONFIG.temps.finalisation.budget_ms, 120000);
+  assert.equal(VERCEL.functions["api/analyze.js"].maxDuration, 240);
+  assert.equal(VERCEL.functions["api/finalize.js"].maxDuration, 180);
 });

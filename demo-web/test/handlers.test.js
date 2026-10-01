@@ -117,7 +117,7 @@ test("réponse au navigateur : ni blocs de réflexion, ni messages bruts", async
 
 test("quota atteint : rejeu signalé, sans appel au modèle ; sans rejeu → indisponible, règles conservées", async () => {
   const m = monter();
-  for (let i = 0; i < CONFIG.quota_jour; i++) await m.redis.incr("production:quota:2026-09-30");
+  for (let i = 0; i < CONFIG.quota_jour.production; i++) await m.redis.incr("production:quota:2026-09-30");
   H._definirChargeurRejeu((s) => ({ scenario: s || "recours", contenu: rejeuFactice }));
   const r = (await appeler(m.analyse, dossier("reseau"))).json();
   assert.equal(r.mode, "rejeu");
@@ -183,7 +183,7 @@ test("quota : lecture seule, mise en cache CDN 60 s, aucune clé créée", async
   const m = monter();
   const res = await appeler(m.quota, undefined, "GET");
   assert.equal(res.statusCode, 200);
-  assert.deepEqual(res.json(), { restantes: CONFIG.quota_jour, limite: CONFIG.quota_jour });
+  assert.deepEqual(res.json(), { restantes: CONFIG.quota_jour.production, limite: CONFIG.quota_jour.production });
   assert.equal(res.headers["cache-control"], "public, max-age=0, s-maxage=60");
   assert.deepEqual(m.redis.cles(), []);
   assert.equal((await appeler(m.quota, {}, "POST")).statusCode, 405);
@@ -201,9 +201,9 @@ test("quota : stockage en panne ou absent → 503 sans mise en cache", async () 
 test("analyse en direct : la réponse donne le quota restant après l'incrément", async () => {
   const m = monter({ script: scriptRecours() });
   const r = (await appeler(m.analyse, dossier("recours"))).json();
-  assert.deepEqual(r.quota, { restantes: CONFIG.quota_jour - 1, limite: CONFIG.quota_jour });
+  assert.deepEqual(r.quota, { restantes: CONFIG.quota_jour.production - 1, limite: CONFIG.quota_jour.production });
   const q = (await appeler(m.quota, undefined, "GET")).json();
-  assert.equal(q.restantes, CONFIG.quota_jour - 1);
+  assert.equal(q.restantes, CONFIG.quota_jour.production - 1);
 });
 
 // ── Finalisation ─────────────────────────────────────────────────────────
@@ -310,4 +310,18 @@ test("les points d'entrée api/ se chargent sans réseau ni variables d'environn
   assert.equal(typeof finalise, "function");
   const r = (await appeler(analyse, dossier("stp"))).json();
   assert.equal(r.mode, "regles_seules");
+});
+
+test("point d'accès du quota : la limite affichée est celle de l'environnement (preview : 3)", async () => {
+  const m = monter({ env: "preview" });
+  assert.deepEqual((await appeler(m.quota, undefined, "GET")).json(), { restantes: 3, limite: 3 });
+  const prod = monter({ env: "production" });
+  assert.deepEqual((await appeler(prod.quota, undefined, "GET")).json(), { restantes: 15, limite: 15 });
+});
+
+test("config : le calcul du quota est documenté et daté (01/10/2026, pire cas 0,031 $, plafond 18 $)", () => {
+  const doc = CONFIG._quota_jour;
+  for (const attendu of ["01/10/2026", "0,031 $", "18 $", "13,95 $", "2,79 $", "16,74 $", "1,26 $"]) assert.ok(doc.includes(attendu), attendu);
+  const total = (CONFIG.quota_jour.production + CONFIG.quota_jour.preview) * 30 * 0.031;
+  assert.ok(total <= 18 && Math.abs(total - 16.74) < 1e-9, "production + preview restent sous le plafond");
 });

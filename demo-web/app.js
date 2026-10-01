@@ -9,8 +9,9 @@
 const API = { analyse: "/api/analyze", finalisation: "/api/finalize", quota: "/api/quota" };
 // maxDuration de vercel.json + 5 s : au-delà, le client abandonne et passe au repli
 const DELAI_MS = { analyse: 245000, finalisation: 185000, quota: 10000, rejeu: 10000 };
-// PROVISOIRE — recalée au jalon 1c sur la durée mesurée des analyses réelles
-const DUREE_ANNONCEE_S = 30;
+// PROVISOIRE jusqu'à la vérification en prévisualisation. Mesures du 01/10/2026 :
+// 6 à 10 s pour l'analyse, 3 à 6 s pour la finalisation, jusqu'à ~18 s à cache froid.
+const DUREE_ANNONCEE = "généralement 10 à 20 secondes";
 const MESSAGE_NEUTRE = "Analyse en direct momentanément indisponible. Réessayez plus tard.";
 const AVERTISSEMENT_BROUILLON = "Brouillon — aucun envoi réel.";
 const SCENARIO_REPLI = "recours";
@@ -427,7 +428,7 @@ async function repliClientAnalyse() {
 
 // ── Analyse ────────────────────────────────────────────────────────────────
 function attente(visible) {
-  $("attenteTexte").textContent = `Analyse en cours — environ ${DUREE_ANNONCEE_S} secondes.`;
+  $("attenteTexte").textContent = `Analyse en cours — ${DUREE_ANNONCEE}.`;
   montrer("attente", visible);
   $("boutonAnalyser").disabled = visible;
 }

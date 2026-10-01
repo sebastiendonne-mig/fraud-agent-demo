@@ -130,7 +130,7 @@ function demarrer({ port = 0 } = {}) {
       if (url.searchParams.get("quota") === "epuise") {
         for (const k of redis.cles()) redis.donnees.delete(k);
         const jour = new Intl.DateTimeFormat("en-CA", { timeZone: CONFIG.fuseau_quota, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-        for (let i = 0; i < CONFIG.quota_jour; i++) await redis.incr(`development:quota:${jour}`);
+        for (let i = 0; i < CONFIG.quota_jour.development; i++) await redis.incr(`development:quota:${jour}`);
         H._definirChargeurRejeu((s) => ({ scenario: s || "recours", contenu: REJEU_FICTIF }));
       }
       if (url.searchParams.get("quota") === "normal") { redis = creerFauxRedis(); H._definirChargeurRejeu(null); }

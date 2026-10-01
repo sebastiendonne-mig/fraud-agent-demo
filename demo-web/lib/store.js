@@ -33,8 +33,18 @@ function jourDuQuota(ms, fuseau) {
     .format(new Date(ms));
 }
 
+// Limite quotidienne de l'environnement. `quota_jour` est un objet par
+// environnement (production, preview, development) ; un nombre est accepté pour
+// les essais (tests, enregistrement des rejeux).
+function limiteQuota(config, prefixe) {
+  const q = config.quota_jour;
+  if (typeof q === "number") return q;
+  return q[prefixe] ?? q.development;
+}
+
 function creerStore({ redis, env, config = CONFIG_AGENT }) {
   const prefixe = environnement(env);
+  const limite = limiteQuota(config, prefixe);
   const cle = (type, id) => `${prefixe}:${type}:${id}`;
 
   return {
@@ -46,14 +56,14 @@ function creerStore({ redis, env, config = CONFIG_AGENT }) {
       const k = cle("quota", jourDuQuota(ms, config.fuseau_quota));
       const utilisees = await redis.incr(k);
       if (utilisees === 1) await redis.expire(k, config.ttl_quota_s);
-      return { autorise: utilisees <= config.quota_jour, utilisees, limite: config.quota_jour };
+      return { autorise: utilisees <= limite, utilisees, limite };
     },
 
     // Lecture seule du compteur (pour l'affichage des analyses restantes, jalon 1b)
     async lireQuota(ms) {
       const k = cle("quota", jourDuQuota(ms, config.fuseau_quota));
       const utilisees = Number((await redis.get(k)) ?? 0);
-      return { utilisees, restantes: Math.max(0, config.quota_jour - utilisees), limite: config.quota_jour };
+      return { utilisees, restantes: Math.max(0, limite - utilisees), limite };
     },
 
     async sauverRun(id, etat) {
@@ -67,4 +77,4 @@ function creerStore({ redis, env, config = CONFIG_AGENT }) {
   };
 }
 
-module.exports = { creerStore, creerRedisDepuisEnv, environnement, jourDuQuota, ENVIRONNEMENTS };
+module.exports = { creerStore, creerRedisDepuisEnv, environnement, jourDuQuota, limiteQuota, ENVIRONNEMENTS };
