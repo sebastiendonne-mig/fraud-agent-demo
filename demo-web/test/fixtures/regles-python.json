@@ -1,0 +1,196 @@
+[
+  {
+    "entree": {
+      "ip_count_30d": 0,
+      "reparateur_count_90d": 0,
+      "days_since_subscription": 0,
+      "montant_zscore": 1.8,
+      "montant_reclame": 1000,
+      "type": "accident_auto",
+      "id_reparateur": "REP-000",
+      "adresse_ip_declaration": "203.0.113.0"
+    },
+    "score": 15,
+    "reason_codes": [
+      "Sinistre déclaré 0 jours après la souscription de la police (< 30 jours)"
+    ]
+  },
+  {
+    "entree": {
+      "ip_count_30d": 1,
+      "reparateur_count_90d": 1,
+      "days_since_subscription": 5,
+      "montant_zscore": 1.8000001,
+      "montant_reclame": 1137,
+      "type": "accident_auto",
+      "id_reparateur": "REP-001",
+      "adresse_ip_declaration": "203.0.113.1"
+    },
+    "score": 35,
+    "reason_codes": [
+      "Adresse IP partagée avec 1 autre(s) dossier(s) sur 30 jours (203.0.113.1)",
+      "Sinistre déclaré 5 jours après la souscription de la police (< 30 jours)",
+      "Montant réclamé (1137 €) supérieur de 1.8σ à la moyenne du type 'accident_auto'"
+    ]
+  },
+  {
+    "entree": {
+      "ip_count_30d": 2,
+      "reparateur_count_90d": 2,
+      "days_since_subscription": 29,
+      "montant_zscore": 1.85,
+      "montant_reclame": 1274,
+      "type": "accident_auto",
+      "id_reparateur": "REP-002",
+      "adresse_ip_declaration": "203.0.113.2"
+    },
+    "score": 50,
+    "reason_codes": [
+      "Adresse IP partagée avec 2 autre(s) dossier(s) sur 30 jours (203.0.113.2)",
+      "Réparateur REP-002 impliqué dans 2 autre(s) dossier(s) sur 90 jours",
+      "Sinistre déclaré 29 jours après la souscription de la police (< 30 jours)",
+      "Montant réclamé (1274 €) supérieur de 1.9σ à la moyenne du type 'accident_auto'"
+    ]
+  },
+  {
+    "entree": {
+      "ip_count_30d": 0,
+      "reparateur_count_90d": 3,
+      "days_since_subscription": 30,
+      "montant_zscore": 1.95,
+      "montant_reclame": 1411,
+      "type": "accident_auto",
+      "id_reparateur": "REP-003",
+      "adresse_ip_declaration": "203.0.113.3"
+    },
+    "score": 30,
+    "reason_codes": [
+      "Réparateur REP-003 impliqué dans 3 autre(s) dossier(s) sur 90 jours",
+      "Montant réclamé (1411 €) supérieur de 1.9σ à la moyenne du type 'accident_auto'"
+    ]
+  },
+  {
+    "entree": {
+      "ip_count_30d": 1,
+      "reparateur_count_90d": 0,
+      "days_since_subscription": 400,
+      "montant_zscore": 2.05,
+      "montant_reclame": 1548,
+      "type": "accident_auto",
+      "id_reparateur": "REP-004",
+      "adresse_ip_declaration": "203.0.113.4"
+    },
+    "score": 20,
+    "reason_codes": [
+      "Adresse IP partagée avec 1 autre(s) dossier(s) sur 30 jours (203.0.113.4)",
+      "Montant réclamé (1548 €) supérieur de 2.0σ à la moyenne du type 'accident_auto'"
+    ]
+  },
+  {
+    "entree": {
+      "ip_count_30d": 2,
+      "reparateur_count_90d": 1,
+      "days_since_subscription": 0,
+      "montant_zscore": 2.25,
+      "montant_reclame": 1685,
+      "type": "accident_auto",
+      "id_reparateur": "REP-005",
+      "adresse_ip_declaration": "203.0.113.5"
+    },
+    "score": 45,
+    "reason_codes": [
+      "Adresse IP partagée avec 2 autre(s) dossier(s) sur 30 jours (203.0.113.5)",
+      "Sinistre déclaré 0 jours après la souscription de la police (< 30 jours)",
+      "Montant réclamé (1685 €) supérieur de 2.2σ à la moyenne du type 'accident_auto'"
+    ]
+  },
+  {
+    "entree": {
+      "ip_count_30d": 0,
+      "reparateur_count_90d": 2,
+      "days_since_subscription": 5,
+      "montant_zscore": 2.35,
+      "montant_reclame": 1822,
+      "type": "accident_auto",
+      "id_reparateur": "REP-006",
+      "adresse_ip_declaration": "203.0.113.6"
+    },
+    "score": 39,
+    "reason_codes": [
+      "Réparateur REP-006 impliqué dans 2 autre(s) dossier(s) sur 90 jours",
+      "Sinistre déclaré 5 jours après la souscription de la police (< 30 jours)",
+      "Montant réclamé (1822 €) supérieur de 2.4σ à la moyenne du type 'accident_auto'"
+    ]
+  },
+  {
+    "entree": {
+      "ip_count_30d": 1,
+      "reparateur_count_90d": 3,
+      "days_since_subscription": 29,
+      "montant_zscore": 2.45,
+      "montant_reclame": 1959,
+      "type": "accident_auto",
+      "id_reparateur": "REP-007",
+      "adresse_ip_declaration": "203.0.113.7"
+    },
+    "score": 50,
+    "reason_codes": [
+      "Adresse IP partagée avec 1 autre(s) dossier(s) sur 30 jours (203.0.113.7)",
+      "Réparateur REP-007 impliqué dans 3 autre(s) dossier(s) sur 90 jours",
+      "Sinistre déclaré 29 jours après la souscription de la police (< 30 jours)",
+      "Montant réclamé (1959 €) supérieur de 2.5σ à la moyenne du type 'accident_auto'"
+    ]
+  },
+  {
+    "entree": {
+      "ip_count_30d": 2,
+      "reparateur_count_90d": 0,
+      "days_since_subscription": 30,
+      "montant_zscore": 3.05,
+      "montant_reclame": 2096,
+      "type": "accident_auto",
+      "id_reparateur": "REP-008",
+      "adresse_ip_declaration": "203.0.113.8"
+    },
+    "score": 30,
+    "reason_codes": [
+      "Adresse IP partagée avec 2 autre(s) dossier(s) sur 30 jours (203.0.113.8)",
+      "Montant réclamé (2096 €) supérieur de 3.0σ à la moyenne du type 'accident_auto'"
+    ]
+  },
+  {
+    "entree": {
+      "ip_count_30d": 0,
+      "reparateur_count_90d": 1,
+      "days_since_subscription": 400,
+      "montant_zscore": 4.999,
+      "montant_reclame": 2233,
+      "type": "accident_auto",
+      "id_reparateur": "REP-009",
+      "adresse_ip_declaration": "203.0.113.9"
+    },
+    "score": 10,
+    "reason_codes": [
+      "Montant réclamé (2233 €) supérieur de 5.0σ à la moyenne du type 'accident_auto'"
+    ]
+  },
+  {
+    "entree": {
+      "ip_count_30d": 1,
+      "reparateur_count_90d": 2,
+      "days_since_subscription": 0,
+      "montant_zscore": 12.34,
+      "montant_reclame": 2370,
+      "type": "accident_auto",
+      "id_reparateur": "REP-010",
+      "adresse_ip_declaration": "203.0.113.10"
+    },
+    "score": 49,
+    "reason_codes": [
+      "Adresse IP partagée avec 1 autre(s) dossier(s) sur 30 jours (203.0.113.10)",
+      "Réparateur REP-010 impliqué dans 2 autre(s) dossier(s) sur 90 jours",
+      "Sinistre déclaré 0 jours après la souscription de la police (< 30 jours)",
+      "Montant réclamé (2370 €) supérieur de 12.3σ à la moyenne du type 'accident_auto'"
+    ]
+  }
+]

@@ -1,0 +1,447 @@
+{
+  "enregistre_le": "01/10/2026",
+  "analyse": {
+    "proposition": {
+      "routage": "STP",
+      "mode": "recours_seul",
+      "score_regles": 0,
+      "reason_codes": [],
+      "synthese": "Dossier en traitement automatique (score 0/50, aucun signal). Le procès-verbal désigne M. BENALI, tiers, responsable à 100 % (feu rouge brûlé, témoin concordant). Le montant récupérable est de 5 652 €, au-dessus du seuil de 500 €, donc le recours est viable.",
+      "reason_codes_commentes": [],
+      "recours": {
+        "evalue": true,
+        "viable": true,
+        "tiers_responsable": "M. Karim BENALI (plaque DEMO-102)",
+        "assureur_adverse": "Mutuelle Fictive d'Assurance (n°0000000)",
+        "part_responsabilite_tiers_pct": 100,
+        "certitude": "Élevé",
+        "elements_factuels": [
+          "PV-2026-0012 : le tiers a grillé le feu rouge en tournant à gauche",
+          "L'assuré circulait sur la voie principale, feu vert",
+          "Le témoin Mme ROUSSEAU confirme les faits",
+          "Responsabilité du tiers fixée à 100 %, sans partage",
+          "Dommages matériels de 5 652 € (devis REP-031), pas de dommage corporel",
+          "Montant récupérable de 5 652 € (outil), seuil de 500 € dépassé"
+        ],
+        "montant_recuperable": 5652,
+        "seuil_euros": 500
+      },
+      "actions_proposees": [
+        "Valider le recours contre l'assureur adverse (Mutuelle Fictive d'Assurance)",
+        "Préparer le courrier de recours avec le PV et le devis",
+        "Suivre la réponse de l'assureur adverse"
+      ],
+      "points_d_attention": [
+        "Le montant récupérable est brut : la franchise de 500 € n'est pas traitée dans le calcul de la démo",
+        "Le dossier reste en traitement automatique (STP)"
+      ]
+    },
+    "trace": {
+      "tours": [
+        {
+          "phase": "analyse",
+          "numero": 1,
+          "debut_ms": 0,
+          "fin_ms": 1395,
+          "duree_ms": 1395,
+          "stop_reason": "tool_use",
+          "usage": {
+            "entree": 4,
+            "sortie": 66,
+            "cache_lecture": 2334,
+            "cache_creation": 799
+          },
+          "outils": [
+            {
+              "nom": "calculer_montant_recours",
+              "entree": {
+                "part_responsabilite_tiers_pct": 100
+              },
+              "sortie": {
+                "montant_reclame": 5652,
+                "part_responsabilite_tiers_pct": 100,
+                "montant_recuperable": 5652,
+                "seuil_recours_euros": 500,
+                "au_dessus_du_seuil": true,
+                "franchise": "non traitée dans cette démo (montant brut)"
+              },
+              "duree_ms": 0
+            }
+          ]
+        },
+        {
+          "phase": "analyse",
+          "numero": 2,
+          "debut_ms": 1395,
+          "fin_ms": 6453,
+          "duree_ms": 5058,
+          "stop_reason": "tool_use",
+          "usage": {
+            "entree": 2,
+            "sortie": 682,
+            "cache_lecture": 3133,
+            "cache_creation": 167
+          },
+          "outils": [
+            {
+              "nom": "proposer_decision",
+              "entree": {
+                "synthese": "Dossier en traitement automatique (score 0/50, aucun signal). Le procès-verbal désigne M. BENALI, tiers, responsable à 100 % (feu rouge brûlé, témoin concordant). Le montant récupérable est de 5 652 €, au-dessus du seuil de 500 €, donc le recours est viable.",
+                "reason_codes_commentes": [],
+                "recours": {
+                  "evalue": true,
+                  "viable": true,
+                  "tiers_responsable": "M. Karim BENALI (plaque DEMO-102)",
+                  "assureur_adverse": "Mutuelle Fictive d'Assurance (n°0000000)",
+                  "part_responsabilite_tiers_pct": 100,
+                  "certitude": "Élevé",
+                  "elements_factuels": [
+                    "PV-2026-0012 : le tiers a grillé le feu rouge en tournant à gauche",
+                    "L'assuré circulait sur la voie principale, feu vert",
+                    "Le témoin Mme ROUSSEAU confirme les faits",
+                    "Responsabilité du tiers fixée à 100 %, sans partage",
+                    "Dommages matériels de 5 652 € (devis REP-031), pas de dommage corporel",
+                    "Montant récupérable de 5 652 € (outil), seuil de 500 € dépassé"
+                  ]
+                },
+                "actions_proposees": [
+                  "Valider le recours contre l'assureur adverse (Mutuelle Fictive d'Assurance)",
+                  "Préparer le courrier de recours avec le PV et le devis",
+                  "Suivre la réponse de l'assureur adverse"
+                ],
+                "points_d_attention": [
+                  "Le montant récupérable est brut : la franchise de 500 € n'est pas traitée dans le calcul de la démo",
+                  "Le dossier reste en traitement automatique (STP)"
+                ]
+              },
+              "sortie": "valide",
+              "duree_ms": 0
+            }
+          ]
+        }
+      ],
+      "phases": [
+        {
+          "phase": "analyse",
+          "debut_ms": 0,
+          "duree_ms": 6453,
+          "issue": "pause"
+        }
+      ],
+      "corrections": [],
+      "usage_total": {
+        "entree": 6439,
+        "sortie": 748,
+        "cache_lecture": 5467,
+        "cache_creation": 966
+      },
+      "duree_totale_ms": 6453
+    }
+  },
+  "finalisation": {
+    "valider": {
+      "finalisation": {
+        "statut_final": "RECOURS_A_ENGAGER",
+        "decision_gestionnaire": "valider",
+        "synthese": "Dossier STP (score 0/50). Le PV-2026-0012 établit que le tiers, M. BENALI, est responsable à 100 %. Le recours de 5 652 € (brut, hors franchise) est viable et dépasse le seuil de 500 €. Le gestionnaire a validé la proposition.",
+        "brouillon_courrier_recours": "Objet : Demande de remboursement – sinistre du 17/09/2026 – PV-2026-0012\n\nMadame, Monsieur,\n\nLe 17/09/2026, une collision a eu lieu en intersection à feux tricolores entre le véhicule de notre assuré, M. Laurent MARTIN (DEMO-101, police POL-78901), et le véhicule de votre assuré, M. Karim BENALI (DEMO-102, n° 0000000).\n\nLe procès-verbal PV-2026-0012 établit que M. BENALI a franchi le feu rouge en tournant à gauche. Un témoin, Mme Sophie ROUSSEAU, le confirme. Le procès-verbal retient sa responsabilité à 100 %.\n\nLes dommages matériels s'élèvent à 5 652 € (devis du réparateur REP-031). Nous vous demandons de nous rembourser cette somme de 5 652 €, à hauteur de la responsabilité de votre assuré.\n\nPièces jointes : PV-2026-0012, devis REP-031.\n\nDans l'attente de votre réponse, nous vous prions d'agréer, Madame, Monsieur, nos salutations distinguées.\n\nService Sinistres (brouillon, aucun envoi réel)",
+        "plan_actions": {
+          "j5": "Envoyer le courrier de recours à la Mutuelle Fictive d'Assurance avec le PV et le devis. Vérifier que le dossier est complet.",
+          "j15": "Relancer l'assureur adverse s'il n'a pas accusé réception ou pris position.",
+          "j30": "Si le remboursement n'est pas reçu, escalader au gestionnaire pour une mise en demeure ou une autre voie de recouvrement. Vérifier le traitement de la franchise de 500 €."
+        },
+        "avertissement": "Brouillon — aucun envoi réel."
+      },
+      "trace": {
+        "tours": [
+          {
+            "phase": "analyse",
+            "numero": 1,
+            "debut_ms": 0,
+            "fin_ms": 1395,
+            "duree_ms": 1395,
+            "stop_reason": "tool_use",
+            "usage": {
+              "entree": 4,
+              "sortie": 66,
+              "cache_lecture": 2334,
+              "cache_creation": 799
+            },
+            "outils": [
+              {
+                "nom": "calculer_montant_recours",
+                "entree": {
+                  "part_responsabilite_tiers_pct": 100
+                },
+                "sortie": {
+                  "montant_reclame": 5652,
+                  "part_responsabilite_tiers_pct": 100,
+                  "montant_recuperable": 5652,
+                  "seuil_recours_euros": 500,
+                  "au_dessus_du_seuil": true,
+                  "franchise": "non traitée dans cette démo (montant brut)"
+                },
+                "duree_ms": 0
+              }
+            ]
+          },
+          {
+            "phase": "analyse",
+            "numero": 2,
+            "debut_ms": 1395,
+            "fin_ms": 6453,
+            "duree_ms": 5058,
+            "stop_reason": "tool_use",
+            "usage": {
+              "entree": 2,
+              "sortie": 682,
+              "cache_lecture": 3133,
+              "cache_creation": 167
+            },
+            "outils": [
+              {
+                "nom": "proposer_decision",
+                "entree": {
+                  "synthese": "Dossier en traitement automatique (score 0/50, aucun signal). Le procès-verbal désigne M. BENALI, tiers, responsable à 100 % (feu rouge brûlé, témoin concordant). Le montant récupérable est de 5 652 €, au-dessus du seuil de 500 €, donc le recours est viable.",
+                  "reason_codes_commentes": [],
+                  "recours": {
+                    "evalue": true,
+                    "viable": true,
+                    "tiers_responsable": "M. Karim BENALI (plaque DEMO-102)",
+                    "assureur_adverse": "Mutuelle Fictive d'Assurance (n°0000000)",
+                    "part_responsabilite_tiers_pct": 100,
+                    "certitude": "Élevé",
+                    "elements_factuels": [
+                      "PV-2026-0012 : le tiers a grillé le feu rouge en tournant à gauche",
+                      "L'assuré circulait sur la voie principale, feu vert",
+                      "Le témoin Mme ROUSSEAU confirme les faits",
+                      "Responsabilité du tiers fixée à 100 %, sans partage",
+                      "Dommages matériels de 5 652 € (devis REP-031), pas de dommage corporel",
+                      "Montant récupérable de 5 652 € (outil), seuil de 500 € dépassé"
+                    ]
+                  },
+                  "actions_proposees": [
+                    "Valider le recours contre l'assureur adverse (Mutuelle Fictive d'Assurance)",
+                    "Préparer le courrier de recours avec le PV et le devis",
+                    "Suivre la réponse de l'assureur adverse"
+                  ],
+                  "points_d_attention": [
+                    "Le montant récupérable est brut : la franchise de 500 € n'est pas traitée dans le calcul de la démo",
+                    "Le dossier reste en traitement automatique (STP)"
+                  ]
+                },
+                "sortie": "valide",
+                "duree_ms": 0
+              }
+            ]
+          },
+          {
+            "phase": "finalisation",
+            "numero": 1,
+            "debut_ms": 6454,
+            "fin_ms": 12406,
+            "duree_ms": 5952,
+            "stop_reason": "tool_use",
+            "usage": {
+              "entree": 4,
+              "sortie": 847,
+              "cache_lecture": 3300,
+              "cache_creation": 881
+            },
+            "outils": [
+              {
+                "nom": "finaliser_dossier",
+                "entree": {
+                  "statut_final": "RECOURS_A_ENGAGER",
+                  "synthese": "Dossier STP (score 0/50). Le PV-2026-0012 établit que le tiers, M. BENALI, est responsable à 100 %. Le recours de 5 652 € (brut, hors franchise) est viable et dépasse le seuil de 500 €. Le gestionnaire a validé la proposition.",
+                  "brouillon_courrier_recours": "Objet : Demande de remboursement – sinistre du 17/09/2026 – PV-2026-0012\n\nMadame, Monsieur,\n\nLe 17/09/2026, une collision a eu lieu en intersection à feux tricolores entre le véhicule de notre assuré, M. Laurent MARTIN (DEMO-101, police POL-78901), et le véhicule de votre assuré, M. Karim BENALI (DEMO-102, n° 0000000).\n\nLe procès-verbal PV-2026-0012 établit que M. BENALI a franchi le feu rouge en tournant à gauche. Un témoin, Mme Sophie ROUSSEAU, le confirme. Le procès-verbal retient sa responsabilité à 100 %.\n\nLes dommages matériels s'élèvent à 5 652 € (devis du réparateur REP-031). Nous vous demandons de nous rembourser cette somme de 5 652 €, à hauteur de la responsabilité de votre assuré.\n\nPièces jointes : PV-2026-0012, devis REP-031.\n\nDans l'attente de votre réponse, nous vous prions d'agréer, Madame, Monsieur, nos salutations distinguées.\n\nService Sinistres (brouillon, aucun envoi réel)",
+                  "plan_actions": {
+                    "j5": "Envoyer le courrier de recours à la Mutuelle Fictive d'Assurance avec le PV et le devis. Vérifier que le dossier est complet.",
+                    "j15": "Relancer l'assureur adverse s'il n'a pas accusé réception ou pris position.",
+                    "j30": "Si le remboursement n'est pas reçu, escalader au gestionnaire pour une mise en demeure ou une autre voie de recouvrement. Vérifier le traitement de la franchise de 500 €."
+                  }
+                },
+                "sortie": "valide",
+                "duree_ms": 0
+              }
+            ]
+          }
+        ],
+        "phases": [
+          {
+            "phase": "analyse",
+            "debut_ms": 0,
+            "duree_ms": 6453,
+            "issue": "pause"
+          },
+          {
+            "phase": "finalisation",
+            "debut_ms": 6454,
+            "duree_ms": 5952,
+            "issue": "termine"
+          }
+        ],
+        "corrections": [],
+        "usage_total": {
+          "entree": 10624,
+          "sortie": 1595,
+          "cache_lecture": 8767,
+          "cache_creation": 1847
+        },
+        "duree_totale_ms": 12405
+      }
+    },
+    "rejeter": {
+      "finalisation": {
+        "statut_final": "REJETE_PAR_GESTIONNAIRE",
+        "decision_gestionnaire": "rejeter",
+        "synthese": "Le gestionnaire a rejeté la proposition de recours. Motif saisi : « pièces justificatives insuffisantes ». Aucun recours n'est engagé et aucun courrier n'est rédigé. Le routage fraude STP reste inchangé.",
+        "brouillon_courrier_recours": "",
+        "plan_actions": {
+          "j5": "Identifier avec le gestionnaire les pièces justificatives manquantes.",
+          "j15": "Recueillir les pièces complémentaires nécessaires.",
+          "j30": "Réexaminer l'opportunité d'un recours une fois le dossier complété."
+        },
+        "avertissement": "Brouillon — aucun envoi réel."
+      },
+      "trace": {
+        "tours": [
+          {
+            "phase": "analyse",
+            "numero": 1,
+            "debut_ms": 0,
+            "fin_ms": 1395,
+            "duree_ms": 1395,
+            "stop_reason": "tool_use",
+            "usage": {
+              "entree": 4,
+              "sortie": 66,
+              "cache_lecture": 2334,
+              "cache_creation": 799
+            },
+            "outils": [
+              {
+                "nom": "calculer_montant_recours",
+                "entree": {
+                  "part_responsabilite_tiers_pct": 100
+                },
+                "sortie": {
+                  "montant_reclame": 5652,
+                  "part_responsabilite_tiers_pct": 100,
+                  "montant_recuperable": 5652,
+                  "seuil_recours_euros": 500,
+                  "au_dessus_du_seuil": true,
+                  "franchise": "non traitée dans cette démo (montant brut)"
+                },
+                "duree_ms": 0
+              }
+            ]
+          },
+          {
+            "phase": "analyse",
+            "numero": 2,
+            "debut_ms": 1395,
+            "fin_ms": 6453,
+            "duree_ms": 5058,
+            "stop_reason": "tool_use",
+            "usage": {
+              "entree": 2,
+              "sortie": 682,
+              "cache_lecture": 3133,
+              "cache_creation": 167
+            },
+            "outils": [
+              {
+                "nom": "proposer_decision",
+                "entree": {
+                  "synthese": "Dossier en traitement automatique (score 0/50, aucun signal). Le procès-verbal désigne M. BENALI, tiers, responsable à 100 % (feu rouge brûlé, témoin concordant). Le montant récupérable est de 5 652 €, au-dessus du seuil de 500 €, donc le recours est viable.",
+                  "reason_codes_commentes": [],
+                  "recours": {
+                    "evalue": true,
+                    "viable": true,
+                    "tiers_responsable": "M. Karim BENALI (plaque DEMO-102)",
+                    "assureur_adverse": "Mutuelle Fictive d'Assurance (n°0000000)",
+                    "part_responsabilite_tiers_pct": 100,
+                    "certitude": "Élevé",
+                    "elements_factuels": [
+                      "PV-2026-0012 : le tiers a grillé le feu rouge en tournant à gauche",
+                      "L'assuré circulait sur la voie principale, feu vert",
+                      "Le témoin Mme ROUSSEAU confirme les faits",
+                      "Responsabilité du tiers fixée à 100 %, sans partage",
+                      "Dommages matériels de 5 652 € (devis REP-031), pas de dommage corporel",
+                      "Montant récupérable de 5 652 € (outil), seuil de 500 € dépassé"
+                    ]
+                  },
+                  "actions_proposees": [
+                    "Valider le recours contre l'assureur adverse (Mutuelle Fictive d'Assurance)",
+                    "Préparer le courrier de recours avec le PV et le devis",
+                    "Suivre la réponse de l'assureur adverse"
+                  ],
+                  "points_d_attention": [
+                    "Le montant récupérable est brut : la franchise de 500 € n'est pas traitée dans le calcul de la démo",
+                    "Le dossier reste en traitement automatique (STP)"
+                  ]
+                },
+                "sortie": "valide",
+                "duree_ms": 0
+              }
+            ]
+          },
+          {
+            "phase": "finalisation",
+            "numero": 1,
+            "debut_ms": 12407,
+            "fin_ms": 14984,
+            "duree_ms": 2577,
+            "stop_reason": "tool_use",
+            "usage": {
+              "entree": 4,
+              "sortie": 328,
+              "cache_lecture": 3300,
+              "cache_creation": 954
+            },
+            "outils": [
+              {
+                "nom": "finaliser_dossier",
+                "entree": {
+                  "statut_final": "REJETE_PAR_GESTIONNAIRE",
+                  "synthese": "Le gestionnaire a rejeté la proposition de recours. Motif saisi : « pièces justificatives insuffisantes ». Aucun recours n'est engagé et aucun courrier n'est rédigé. Le routage fraude STP reste inchangé.",
+                  "brouillon_courrier_recours": "",
+                  "plan_actions": {
+                    "j5": "Identifier avec le gestionnaire les pièces justificatives manquantes.",
+                    "j15": "Recueillir les pièces complémentaires nécessaires.",
+                    "j30": "Réexaminer l'opportunité d'un recours une fois le dossier complété."
+                  }
+                },
+                "sortie": "valide",
+                "duree_ms": 0
+              }
+            ]
+          }
+        ],
+        "phases": [
+          {
+            "phase": "analyse",
+            "debut_ms": 0,
+            "duree_ms": 6453,
+            "issue": "pause"
+          },
+          {
+            "phase": "finalisation",
+            "debut_ms": 12407,
+            "duree_ms": 2577,
+            "issue": "termine"
+          }
+        ],
+        "corrections": [],
+        "usage_total": {
+          "entree": 10697,
+          "sortie": 1076,
+          "cache_lecture": 8767,
+          "cache_creation": 1920
+        },
+        "duree_totale_ms": 9030
+      }
+    }
+  }
+}

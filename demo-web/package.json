@@ -1,0 +1,12 @@
+{
+  "name": "fraud-agent-demo-web",
+  "private": true,
+  "description": "Démo web : agent de détection de fraude et de recours (données fictives)",
+  "scripts": {
+    "test": "node --require ./test/helpers/sans-reseau.js --test \"test/*.test.js\""
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.129.0",
+    "@upstash/redis": "1.39.0"
+  }
+}

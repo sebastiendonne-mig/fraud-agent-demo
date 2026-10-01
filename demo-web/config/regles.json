@@ -1,0 +1,13 @@
+{
+  "_source": "Copie fidèle des règles de ml/scoring-model.py (compute_rule_score, l. 191-232). Seule source de vérité : ce script Python. Seuils de routage : choix de démo (règles seules, 0-50).",
+  "fenetres_jours": { "reparateur": 90, "ip": 30 },
+  "regles": {
+    "ip": { "seuil": 1, "points_par_occurrence": 10, "plafond": 20 },
+    "reparateur": { "seuil": 2, "points_par_occurrence": 7, "plafond": 20 },
+    "precoce": { "jours_max_exclus": 30, "points": 15 },
+    "montant": { "zscore_min_exclus": 1.8, "points": 10 }
+  },
+  "plafond_score": 50,
+  "routage": { "investigation_a_partir_de": 15, "alerte_siu_a_partir_de": 30 },
+  "recours": { "seuil_euros": 500 }
+}

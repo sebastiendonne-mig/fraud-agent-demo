@@ -1,5 +1,8 @@
 {
-  "rewrites": [
-    { "source": "/api/anthropic", "destination": "/api/proxy" }
-  ]
+  "outputDirectory": "public",
+  "functions": {
+    "api/analyze.js": { "maxDuration": 240 },
+    "api/finalize.js": { "maxDuration": 180 },
+    "api/quota.js": { "maxDuration": 10 }
+  }
 }
