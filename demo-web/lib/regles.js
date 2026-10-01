@@ -103,7 +103,9 @@ function scoreRegles(f, config = REGLES) {
       `Adresse IP partagée avec ${Math.trunc(f.ip_count_30d)} autre(s) dossier(s) sur ${fen.ip} jours${suffixe}`
     );
   }
-  if (f.reparateur_count_90d >= r.reparateur.seuil) {
+  // Sans réparateur renseigné, la règle ne s'applique pas : le compteur n'a pas de sens
+  // (en lot, Python donne alors un compteur de 0). Évite aussi un reason code « Réparateur null ».
+  if (f.id_reparateur && f.reparateur_count_90d >= r.reparateur.seuil) {
     detail.reparateur = Math.min(
       r.reparateur.plafond,
       Math.trunc(f.reparateur_count_90d) * r.reparateur.points_par_occurrence

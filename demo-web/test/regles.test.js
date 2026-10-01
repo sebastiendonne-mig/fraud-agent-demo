@@ -116,3 +116,34 @@ test("mode de l'agent : STP sans rapport → aucun agent ; rapport blanc = pas d
   assert.equal(modeAgent("STP", "PV"), "recours_seul");
   assert.equal(modeAgent("INVESTIGATION", ""), "instruction");
 });
+
+test("sans réparateur renseigné, la règle réparateur ne s'applique pas et aucun reason code ne contient « null »", () => {
+  for (const id of [null, undefined, ""]) {
+    for (const compteur of [0, 1, 2, 9]) {
+      const r = R.scoreRegles({ ...neutre, id_reparateur: id, reparateur_count_90d: compteur });
+      assert.equal(r.detail.reparateur, 0, `id=${JSON.stringify(id)} compteur=${compteur}`);
+      assert.equal(r.reason_codes.some((c) => /Réparateur/.test(c)), false);
+    }
+  }
+  // Avec un réparateur, la règle s'applique toujours (inchangé)
+  assert.equal(R.scoreRegles({ ...neutre, id_reparateur: "REP-007", reparateur_count_90d: 2 }).detail.reparateur, 14);
+});
+
+test("aucune combinaison de saisie ne produit de reason code contenant null, undefined, None ou NaN", () => {
+  for (const id of [null, undefined, "", "REP-007"]) {
+    for (const rep of [0, 2, 9]) for (const ip of [0, 1, 3]) for (const jours of [0, 29, 400]) {
+      const e = R.evaluerDossier({
+        type_sinistre: "accident_auto", montant_reclame: 4800, id_reparateur: id,
+        reparateur_count_90d: rep, ip_count_30d: ip, date_declaration: "2026-09-30",
+        date_souscription: jours === 400 ? "2025-08-26" : jours === 29 ? "2026-09-01" : "2026-09-30",
+      });
+      for (const code of e.reason_codes) assert.doesNotMatch(code, /\b(null|undefined|None|NaN)\b/, code);
+    }
+  }
+});
+
+test("dossier web sans réparateur avec compteur à 2 : score sans la règle réparateur, routage STP", () => {
+  const e = R.evaluerDossier({ ...scenarios().stp, id_reparateur: null, reparateur_count_90d: 2, ip_count_30d: 0 });
+  assert.equal(e.score, 0);
+  assert.equal(trier(e).routage, "STP");
+});
