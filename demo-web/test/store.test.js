@@ -126,3 +126,51 @@ test("quota : un nombre simple reste accepté (essais et enregistrement des reje
   const s = S.creerStore({ redis, env: "production", config: { ...CONFIG, quota_jour: 2 } });
   assert.deepEqual([(await s.incrementerQuota(MIDI_PARIS)).autorise, (await s.incrementerQuota(MIDI_PARIS)).autorise, (await s.incrementerQuota(MIDI_PARIS)).autorise], [true, true, false]);
 });
+
+// ── Quota Jev : second compteur, séparé de celui des analyses ─────────────
+const CONFIG_JEV = require("../config/jev.json");
+
+test("quota Jev : limites par environnement (30 / 6 / 6), environnement inconnu → development", () => {
+  assert.equal(S.limiteQuota(CONFIG_JEV, "production"), 30);
+  assert.equal(S.limiteQuota(CONFIG_JEV, "preview"), 6);
+  assert.equal(S.limiteQuota(CONFIG_JEV, "development"), 6);
+  const redis = creerFauxRedis();
+  assert.equal(S.creerStore({ redis, env: "staging" }).lireQuotaJev(MIDI_PARIS) instanceof Promise, true);
+});
+
+test("quota Jev : clé séparée, compté à l'incrément, TTL posé, refus au-delà de la limite", async () => {
+  const horloge = creerHorloge(MIDI_PARIS);
+  const redis = creerFauxRedis({ horloge });
+  const s = S.creerStore({ redis, env: "preview" });
+  for (let i = 1; i <= CONFIG_JEV.quota_jour.preview; i++) {
+    const q = await s.incrementerQuotaJev(MIDI_PARIS);
+    assert.deepEqual(q, { autorise: true, utilisees: i, limite: 6 });
+  }
+  assert.equal((await s.incrementerQuotaJev(MIDI_PARIS)).autorise, false);
+  assert.deepEqual(redis.cles(), ["preview:quota_jev:2026-09-30"]);
+  assert.ok(redis.ttl("preview:quota_jev:2026-09-30") > 0, "TTL posé");
+  assert.deepEqual(await s.lireQuotaJev(MIDI_PARIS), { utilisees: 7, restantes: 0, limite: 6 });
+});
+
+test("quota Jev : indépendant du quota d'analyses (dans les deux sens) et de l'environnement", async () => {
+  const redis = creerFauxRedis();
+  const prod = S.creerStore({ redis, env: "production" });
+  const preview = S.creerStore({ redis, env: "preview" });
+  for (let i = 0; i < CONFIG.quota_jour.production + 1; i++) await prod.incrementerQuota(MIDI_PARIS);
+  assert.equal((await prod.incrementerQuota(MIDI_PARIS)).autorise, false, "analyses épuisées");
+  assert.equal((await prod.incrementerQuotaJev(MIDI_PARIS)).autorise, true, "Jev intact");
+  for (let i = 0; i < CONFIG_JEV.quota_jour.preview; i++) await preview.incrementerQuotaJev(MIDI_PARIS);
+  assert.equal((await preview.incrementerQuotaJev(MIDI_PARIS)).autorise, false, "Jev preview épuisé");
+  assert.equal((await preview.incrementerQuota(MIDI_PARIS)).autorise, true, "analyses preview intactes");
+  assert.equal((await prod.lireQuotaJev(MIDI_PARIS)).utilisees, 1, "Jev prod indépendant de preview");
+});
+
+test("quota Jev : le jour change à minuit à Paris", async () => {
+  const redis = creerFauxRedis();
+  const s = S.creerStore({ redis, env: "production" });
+  const avantMinuit = Date.UTC(2026, 8, 30, 21, 59, 0); // 23:59 à Paris
+  const apresMinuit = Date.UTC(2026, 8, 30, 22, 1, 0);  // 00:01 le 01/10 à Paris
+  await s.incrementerQuotaJev(avantMinuit);
+  await s.incrementerQuotaJev(apresMinuit);
+  assert.deepEqual(redis.cles().sort(), ["production:quota_jev:2026-09-30", "production:quota_jev:2026-10-01"]);
+});

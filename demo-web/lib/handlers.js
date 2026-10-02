@@ -170,7 +170,14 @@ function creerHandlerQuota(deps) {
       const store = deps.store();
       if (!store) return repondre(res, 503, { erreur: "indisponible" });
       const { restantes, limite } = await store.lireQuota(deps.now());
-      return repondre(res, 200, { restantes, limite }, { cache: CACHE_QUOTA });
+      const reponse = { restantes, limite };
+      try {
+        const j = await store.lireQuotaJev(deps.now());
+        reponse.jev = { restantes: j.restantes, limite: j.limite };
+      } catch {
+        // le compteur Jev est secondaire : son absence n'empêche pas d'afficher le quota des analyses
+      }
+      return repondre(res, 200, reponse, { cache: CACHE_QUOTA });
     } catch {
       return repondre(res, 503, { erreur: "indisponible" });
     }
