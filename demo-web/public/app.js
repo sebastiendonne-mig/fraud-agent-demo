@@ -40,7 +40,7 @@ const LIBELLES_CHAMPS = {
   id_police: "Numéro de police", type_sinistre: "Type de sinistre", montant_reclame: "Montant réclamé",
   montant_plafond: "Plafond de la police", franchise: "Franchise", date_declaration: "Date de déclaration",
   date_souscription: "Date de souscription", id_reparateur: "Réparateur", reparateur_count_90d: "Dossiers du même réparateur",
-  ip_count_30d: "Déclarations depuis la même IP", rapport_police: "Rapport de police", motif: "Motif",
+  ip_count_30d: "Déclarations depuis la même IP", circonstances: "Circonstances", rapport_police: "Rapport de police", motif: "Motif",
 };
 
 // ── Scénarios de démonstration : source unique dans scenarios.js ───────────
@@ -110,7 +110,7 @@ async function envoyer(url, methode, corps, delaiMs) {
 }
 
 // ── Formulaire ─────────────────────────────────────────────────────────────
-const CHAMPS_TEXTE = ["id_police", "type_sinistre", "date_declaration", "date_souscription", "id_reparateur", "rapport_police"];
+const CHAMPS_TEXTE = ["id_police", "type_sinistre", "date_declaration", "date_souscription", "id_reparateur", "circonstances", "rapport_police"];
 const CHAMPS_NOMBRE = ["montant_reclame", "montant_plafond", "franchise", "reparateur_count_90d", "ip_count_30d"];
 
 function remplirScenario(nom) {

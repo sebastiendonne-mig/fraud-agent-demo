@@ -24,6 +24,16 @@ test("corps non objet refusé (tableau, chaîne, null)", () => {
   for (const corps of [[], "texte", null, 42]) assert.equal(validerDossier(corps).ok, false);
 });
 
+test("circonstances : facultatives (défaut vide), limitées à 2 000 caractères, texte uniquement", () => {
+  const { circonstances, ...sans } = base();
+  assert.equal(validerDossier(sans).valeur.circonstances, "");
+  assert.equal(validerDossier({ ...base(), circonstances: "x".repeat(2000) }).ok, true);
+  assert.deepEqual(champsEnErreur(validerDossier({ ...base(), circonstances: "x".repeat(2001) })), ["circonstances"]);
+  for (const mauvais of [42, null, ["a"], { a: 1 }, true]) {
+    assert.deepEqual(champsEnErreur(validerDossier({ ...base(), circonstances: mauvais })), ["circonstances"], JSON.stringify(mauvais));
+  }
+});
+
 test("rapport de police limité à 4 000 caractères", () => {
   assert.equal(validerDossier({ ...base(), rapport_police: "x".repeat(4000) }).ok, true);
   assert.deepEqual(champsEnErreur(validerDossier({ ...base(), rapport_police: "x".repeat(4001) })), ["rapport_police"]);
