@@ -443,7 +443,12 @@ function rendreAnalyse(d) {
     afficherStepper(etapesDepuisTrace(d.regles, d.routage, null, [
       { titre: "Agent", detail: "non appelé : traitement automatique sans rapport de police", statut: "fait" },
     ]));
-    afficherMessage(d.message || "Dossier en traitement automatique : aucun appel à l'IA.");
+    const msgStp = d.repli_jev
+      ? "Dossier en traitement automatique (STP), sans rapport de police : l'agent n'est pas appelé (triage Jev indisponible)."
+      : d.jev
+        ? "Dossier en traitement automatique (STP), sans rapport de police : l'agent n'est pas appelé."
+        : "Dossier en traitement automatique : aucun appel à l'IA.";
+    afficherMessage(d.message || msgStp);
     return;
   }
 

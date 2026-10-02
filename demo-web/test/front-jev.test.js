@@ -75,3 +75,12 @@ test("afficherCarteJev : aucun innerHTML (DOM-only)", () => {
 test("bandeauRejeu : mentionne l'absence de triage Jev", () => {
   assert.match(APP, /sans triage Jev : en direct, le routage peut différer\./);
 });
+
+test("message STP : 3 variantes selon jev / repli_jev / aucun texte", () => {
+  // cas de base : aucun texte, Jev non tenté
+  assert.match(APP, /traitement automatique : aucun appel à l'IA\./);
+  // repli_jev : Jev tenté mais indisponible
+  assert.match(APP, /l'agent n'est pas appelé \(triage Jev indisponible\)\./);
+  // d.jev présent : Jev a répondu, STP maintenu — pas de "(triage Jev indisponible)"
+  assert.match(APP, /l'agent n'est pas appelé\."/);
+});
