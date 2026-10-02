@@ -127,3 +127,7 @@ test("budgets de temps inchangés : 180 / 120 s, maxDuration 240 / 180 s", () =>
   assert.equal(VERCEL.functions["api/analyze.js"].maxDuration, 240);
   assert.equal(VERCEL.functions["api/finalize.js"].maxDuration, 180);
 });
+
+test("aide du champ circonstances : mentionne Jev et « s'il est présent »", () => {
+  assert.match(HTML, /2 000 caractères au maximum\. Transmis à Jev \(TypeSafe AI\) s'il est présent\./);
+});
