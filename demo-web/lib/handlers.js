@@ -31,7 +31,7 @@ function reponseRepli(motif, scenario, extraire, commun = {}) {
   return {
     mode: "rejeu",
     motif,
-    bandeau: `Rejeu d'une exécution réelle du ${rejeu.contenu.enregistre_le} — ce n'est pas l'analyse de votre saisie.`,
+    bandeau: `Rejeu d'une exécution réelle du ${rejeu.contenu.enregistre_le} — ce n'est pas l'analyse de votre saisie. Routage des règles seules, sans triage Jev : en direct, le routage peut différer.`,
     rejeu: { scenario: rejeu.scenario, ...partie },
     ...commun,
   };
