@@ -100,11 +100,15 @@ async function main() {
     const capturer = async (nom, largeur) => {
       await evaluer("window.scrollTo(0, 0)");
       await pause(150);
+      // captureBeyondViewport répète les éléments sticky à chaque hauteur de viewport :
+      // on retire le comportement sticky le temps de la capture, puis on le restaure.
+      await evaluer("document.querySelector('.tk-header') && (document.querySelector('.tk-header').style.position = 'relative')");
       const { cssContentSize } = await cdp.envoyer("Page.getLayoutMetrics");
       const { data } = await cdp.envoyer("Page.captureScreenshot", {
         format: "png", captureBeyondViewport: true,
         clip: { x: 0, y: 0, width: largeur, height: Math.ceil(cssContentSize.height), scale: 1 },
       });
+      await evaluer("document.querySelector('.tk-header') && (document.querySelector('.tk-header').style.position = '')");
       const fichier = `${nom}-${largeur}.png`;
       fs.writeFileSync(path.join(sortie, fichier), Buffer.from(data, "base64"));
       fichiers.push(fichier);
