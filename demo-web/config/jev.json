@@ -1,0 +1,21 @@
+{
+  "_source": "Lot 2, sous-lot 2.1. Accès par Vercel AI Gateway (modèle typesafe-ai/jev), authentification OIDC. Doc : https://vercel.com/docs/ai-gateway/modalities/evaluation (consultée le 02/10/2026).",
+  "modele": "typesafe-ai/jev",
+  "fournisseurs": ["typesafe-ai"],
+  "refus_entrainement": true,
+  "timeout_ms": 10000,
+  "seuils": {
+    "monte_a_partir_de": 0.8,
+    "neutre_jusqu_a": 0.2,
+    "confiance_min": 0.6
+  },
+  "_seuils": "Seuils de démo, non calibrés. Une question est « signal » à partir de 0,8, « neutre » jusqu'à 0,2, « incertain » entre les deux. confiance_min s'applique aux questions choice et score quand providerMetadata.typesafe.confidence est lisible comme un nombre ; sinon la probabilité seule décide (tracé « non_disponible »). Forme exacte de la confiance : non vérifiée.",
+  "quota_jour": {
+    "production": 30,
+    "preview": 6,
+    "development": 6
+  },
+  "_quota_jour": "Quota d'évaluations Jev par jour (heure de Paris), par environnement Vercel, séparé du quota d'analyses de l'agent. Calcul du 02/10/2026, même méthode qu'au lot 1 (pire cas × jours × quota). ESTIMATION, non mesurée : pire cas de 3 000 tokens d'entrée par appel (rapport de 4 000 caractères + récit de 2 000 + questions), soit 3 000 × 0,042 $ / 1 000 000 = 0,000126 $ (sortie non facturée). Production 30/jour × 30 j × 0,000126 $ = 0,113 $ ; prévisualisation 6/jour × 30 j × 0,000126 $ = 0,023 $ ; total ≈ 0,14 $ par mois. Le quota development n'est pas compté (essais occasionnels). Le vrai plafond reste le solde et les budgets du compte AI Gateway. Compté avant l'appel, jamais compté si Jev n'est pas appelé, non remboursé en cas d'échec.",
+  "tarif_usd_par_million_entree": 0.042,
+  "_tarif": "Page du modèle https://vercel.com/ai-gateway/models/jev (consultée le 02/10/2026) ; recoupé par l'exemple de la doc Gateway : 275 tokens = 0,00001155 $. À revérifier avant toute décision budgétaire."
+}
