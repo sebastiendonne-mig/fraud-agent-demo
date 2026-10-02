@@ -38,7 +38,7 @@ test("bloc d'information du visiteur : 6 phrases exactes, placé avant le bouton
   const bloc = texteSeul(HTML.slice(debut, HTML.indexOf("</aside>", debut)));
   for (const phrase of [
     "Données fictives uniquement : n'entrez aucune donnée réelle (nom, plaque, téléphone…).",
-    "Vous interagissez avec une IA (Claude, d'Anthropic). Ses propositions sont soumises à une validation humaine.",
+    "Vous interagissez avec des IA (Claude, d'Anthropic, et Jev, de TypeSafe AI). Les propositions de l'agent sont soumises à une validation humaine.",
     "Traitement par Anthropic, qui conserve les données jusqu'à 30 jours, sauf exceptions (application de la politique d'usage, obligations légales).",
     "Hébergement aux États-Unis : fonctions Vercel, Anthropic et Upstash.",
     "Conservation temporaire : l'état de l'analyse est gardé 30 minutes pour permettre la validation, puis supprimé.",
