@@ -80,9 +80,7 @@ test("rejeux : lisibles par le chargeur du serveur, un par scénario à agent ; 
   assert.equal(chargerRejeu("inconnu").scenario, "recours");
 });
 
-// TODO (sous-lot 2.2) : le prompt est passé à 2026-10-02 (circonstances). Les rejeux ont été
-// enregistrés sous 2026-10-01 et ne sont volontairement pas touchés ici : Sébastien les
-// réenregistre. Ce test reste visible (todo) et sera levé une fois les rejeux refaits.
-test("rejeux : enregistrés avec la version courante du prompt", { todo: "rejeux à ré-enregistrer par Sébastien (prompt 2026-10-02)" }, () => {
-  assert.equal(PROMPT_VERSION, "2026-10-01", "le prompt a changé depuis l'enregistrement : ré-enregistrer les rejeux");
+// Rejeux réenregistrés le 02/10/2026 sous le prompt 2026-10-02 (circonstances transmises à l'agent).
+test("rejeux : enregistrés avec la version courante du prompt", () => {
+  assert.equal(PROMPT_VERSION, "2026-10-02", "le prompt a changé depuis l'enregistrement : ré-enregistrer les rejeux");
 });

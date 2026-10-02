@@ -1,5 +1,5 @@
 {
-  "enregistre_le": "01/10/2026",
+  "enregistre_le": "02/10/2026",
   "analyse": {
     "proposition": {
       "routage": "ALERTE_SIU",
@@ -9,10 +9,10 @@
         "Adresse IP partagée avec 1 autre(s) dossier(s) sur 30 jours",
         "Réparateur REP-007 impliqué dans 9 autre(s) dossier(s) sur 90 jours"
       ],
-      "synthese": "Dossier routé ALERTE_SIU par les règles (score 30/50), sur deux signaux : IP partagée avec un autre dossier et réparateur REP-007 très présent. L'historique du portefeuille fictif montre 9 dossiers pour REP-007, tous en 2024, de types variés et pour des montants très inégaux. Aucun rapport de police n'est fourni, donc le recours n'a pas été évalué.",
+      "synthese": "Dossier en ALERTE_SIU (score 30/50), routage non modifiable. Signaux : IP partagée avec un autre dossier et réparateur REP-007 très présent (9 dossiers). Aucun rapport de police et délit de fuite sans témoin : recours impossible à évaluer.",
       "reason_codes_commentes": [
-        "Adresse IP partagée avec 1 autre dossier sur 30 jours : signal isolé et modéré. Il ne prouve pas à lui seul un lien entre les deux dossiers (foyer ou réseau partagé possibles). Le dossier ne dit rien de l'autre dossier.",
-        "Réparateur REP-007 impliqué dans 9 autres dossiers sur 90 jours : l'historique consulté compte 9 dossiers, mais datés de 2024 (mars à décembre). Cela ne correspond pas à une fenêtre de 90 jours autour de la déclaration de 2026. Le chiffre du dossier est une donnée d'enrichissement simulée, pas un calcul sur le portefeuille."
+        "IP partagée avec 1 autre dossier sur 30 jours : lien possible entre dossiers, à vérifier (pas une preuve en soi).",
+        "REP-007 impliqué dans 9 dossiers sur 90 jours (donnée d'enrichissement simulée) : l'historique du portefeuille fictif confirme 9 dossiers, mais datés de 2024 et de types variés, dont 5 accidents auto de 813 à 15 140 €."
       ],
       "recours": {
         "evalue": false,
@@ -22,23 +22,24 @@
         "part_responsabilite_tiers_pct": 0,
         "certitude": "Sans objet",
         "elements_factuels": [
-          "Aucun rapport de police fourni : tiers et part de responsabilité non identifiables."
+          "Aucun rapport de police fourni",
+          "Tiers non identifié (délit de fuite déclaré), aucun témoin"
         ],
         "montant_recuperable": null,
         "seuil_euros": 500
       },
       "actions_proposees": [
-        "Maintenir le routage ALERTE_SIU et transmettre le dossier au SIU avec l'historique de REP-007.",
-        "Identifier l'autre dossier lié à la même adresse IP et vérifier les liens éventuels avec l'assuré.",
-        "Demander le devis ou la facture du réparateur et les justificatifs du sinistre (montant réclamé 4 800 €, franchise 500 €).",
-        "Demander un rapport de police ou un constat amiable afin d'évaluer un éventuel recours."
+        "Transmettre au SIU conformément au routage ALERTE_SIU",
+        "Demander le rapport de police / dépôt de plainte pour le délit de fuite",
+        "Ne pas indemniser immédiatement : expertise préalable du véhicule",
+        "Vérifier le lien entre les dossiers partageant la même IP",
+        "Examiner les liens entre l'assuré et REP-007"
       ],
       "points_d_attention": [
-        "Les champs reparateur_count_90d et ip_count_30d sont simulés pour la démonstration.",
-        "L'historique de REP-007 date de 2024 et n'est pas aligné sur la date de déclaration (2026-09-26).",
-        "Les signaux sont des indices, pas une preuve de fraude.",
-        "Police souscrite le 2025-08-27, soit environ 13 mois avant la déclaration : ancienneté sans particularité.",
-        "Le recours n'a pas pu être examiné faute de rapport de police."
+        "Pression à l'indemnisation immédiate et refus d'attendre l'expertise : à noter comme élément de contexte, sans conclure à la fraude.",
+        "Historique réparateur daté de 2024, non aligné sur la date du dossier (2026) : portée limitée.",
+        "Absence de rapport de police et de témoin : circonstances non vérifiables.",
+        "Souscription il y a environ 13 mois."
       ]
     },
     "trace": {
@@ -46,15 +47,15 @@
         {
           "phase": "analyse",
           "numero": 1,
-          "debut_ms": 1,
-          "fin_ms": 1850,
-          "duree_ms": 1849,
+          "debut_ms": 0,
+          "fin_ms": 2342,
+          "duree_ms": 2342,
           "stop_reason": "tool_use",
           "usage": {
             "entree": 4,
             "sortie": 64,
-            "cache_lecture": 0,
-            "cache_creation": 2846
+            "cache_lecture": 2374,
+            "cache_creation": 683
           },
           "outils": [
             {
@@ -124,31 +125,31 @@
                 "source": "portefeuille fictif de démonstration",
                 "periode": "2024 — portefeuille fictif historique, non aligné sur la date du dossier"
               },
-              "duree_ms": 0
+              "duree_ms": 1
             }
           ]
         },
         {
           "phase": "analyse",
           "numero": 2,
-          "debut_ms": 1850,
-          "fin_ms": 9512,
-          "duree_ms": 7662,
+          "debut_ms": 2343,
+          "fin_ms": 8821,
+          "duree_ms": 6478,
           "stop_reason": "tool_use",
           "usage": {
             "entree": 2,
-            "sortie": 994,
-            "cache_lecture": 2846,
+            "sortie": 784,
+            "cache_lecture": 3057,
             "cache_creation": 628
           },
           "outils": [
             {
               "nom": "proposer_decision",
               "entree": {
-                "synthese": "Dossier routé ALERTE_SIU par les règles (score 30/50), sur deux signaux : IP partagée avec un autre dossier et réparateur REP-007 très présent. L'historique du portefeuille fictif montre 9 dossiers pour REP-007, tous en 2024, de types variés et pour des montants très inégaux. Aucun rapport de police n'est fourni, donc le recours n'a pas été évalué.",
+                "synthese": "Dossier en ALERTE_SIU (score 30/50), routage non modifiable. Signaux : IP partagée avec un autre dossier et réparateur REP-007 très présent (9 dossiers). Aucun rapport de police et délit de fuite sans témoin : recours impossible à évaluer.",
                 "reason_codes_commentes": [
-                  "Adresse IP partagée avec 1 autre dossier sur 30 jours : signal isolé et modéré. Il ne prouve pas à lui seul un lien entre les deux dossiers (foyer ou réseau partagé possibles). Le dossier ne dit rien de l'autre dossier.",
-                  "Réparateur REP-007 impliqué dans 9 autres dossiers sur 90 jours : l'historique consulté compte 9 dossiers, mais datés de 2024 (mars à décembre). Cela ne correspond pas à une fenêtre de 90 jours autour de la déclaration de 2026. Le chiffre du dossier est une donnée d'enrichissement simulée, pas un calcul sur le portefeuille."
+                  "IP partagée avec 1 autre dossier sur 30 jours : lien possible entre dossiers, à vérifier (pas une preuve en soi).",
+                  "REP-007 impliqué dans 9 dossiers sur 90 jours (donnée d'enrichissement simulée) : l'historique du portefeuille fictif confirme 9 dossiers, mais datés de 2024 et de types variés, dont 5 accidents auto de 813 à 15 140 €."
                 ],
                 "recours": {
                   "evalue": false,
@@ -158,25 +159,26 @@
                   "part_responsabilite_tiers_pct": 0,
                   "certitude": "Sans objet",
                   "elements_factuels": [
-                    "Aucun rapport de police fourni : tiers et part de responsabilité non identifiables."
+                    "Aucun rapport de police fourni",
+                    "Tiers non identifié (délit de fuite déclaré), aucun témoin"
                   ]
                 },
                 "actions_proposees": [
-                  "Maintenir le routage ALERTE_SIU et transmettre le dossier au SIU avec l'historique de REP-007.",
-                  "Identifier l'autre dossier lié à la même adresse IP et vérifier les liens éventuels avec l'assuré.",
-                  "Demander le devis ou la facture du réparateur et les justificatifs du sinistre (montant réclamé 4 800 €, franchise 500 €).",
-                  "Demander un rapport de police ou un constat amiable afin d'évaluer un éventuel recours."
+                  "Transmettre au SIU conformément au routage ALERTE_SIU",
+                  "Demander le rapport de police / dépôt de plainte pour le délit de fuite",
+                  "Ne pas indemniser immédiatement : expertise préalable du véhicule",
+                  "Vérifier le lien entre les dossiers partageant la même IP",
+                  "Examiner les liens entre l'assuré et REP-007"
                 ],
                 "points_d_attention": [
-                  "Les champs reparateur_count_90d et ip_count_30d sont simulés pour la démonstration.",
-                  "L'historique de REP-007 date de 2024 et n'est pas aligné sur la date de déclaration (2026-09-26).",
-                  "Les signaux sont des indices, pas une preuve de fraude.",
-                  "Police souscrite le 2025-08-27, soit environ 13 mois avant la déclaration : ancienneté sans particularité.",
-                  "Le recours n'a pas pu être examiné faute de rapport de police."
+                  "Pression à l'indemnisation immédiate et refus d'attendre l'expertise : à noter comme élément de contexte, sans conclure à la fraude.",
+                  "Historique réparateur daté de 2024, non aligné sur la date du dossier (2026) : portée limitée.",
+                  "Absence de rapport de police et de témoin : circonstances non vérifiables.",
+                  "Souscription il y a environ 13 mois."
                 ]
               },
               "sortie": "valide",
-              "duree_ms": 1
+              "duree_ms": 2
             }
           ]
         }
@@ -185,18 +187,18 @@
         {
           "phase": "analyse",
           "debut_ms": 0,
-          "duree_ms": 9513,
+          "duree_ms": 8823,
           "issue": "pause"
         }
       ],
       "corrections": [],
       "usage_total": {
-        "entree": 6326,
-        "sortie": 1058,
-        "cache_lecture": 2846,
-        "cache_creation": 3474
+        "entree": 6748,
+        "sortie": 848,
+        "cache_lecture": 5431,
+        "cache_creation": 1311
       },
-      "duree_totale_ms": 9513
+      "duree_totale_ms": 8823
     }
   },
   "finalisation": {
@@ -204,12 +206,12 @@
       "finalisation": {
         "statut_final": "TRANSMIS_SIU",
         "decision_gestionnaire": "valider",
-        "synthese": "Proposition validée par le gestionnaire. Le dossier POL-78234 reste en ALERTE_SIU (score 30/50) à cause d'une IP partagée et de la forte présence du réparateur REP-007. Il est transmis au SIU. Le recours n'a pas été évalué, faute de rapport de police.",
+        "synthese": "Décision validée par le gestionnaire. Routage ALERTE_SIU (score 30/50) : dossier transmis au SIU. Signaux : IP partagée et réparateur REP-007 récurrent. Pas de rapport de police, tiers non identifié (délit de fuite) : recours non évalué. Indemnisation immédiate non accordée, expertise préalable requise.",
         "brouillon_courrier_recours": "",
         "plan_actions": {
-          "j5": "Transmettre le dossier au SIU avec l'historique de REP-007. Identifier l'autre dossier lié à la même IP.",
-          "j15": "Obtenir le devis ou la facture du réparateur et les justificatifs du sinistre. Demander un rapport de police ou un constat amiable.",
-          "j30": "Faire le point sur le retour du SIU. Si un rapport de police est obtenu, évaluer le recours."
+          "j5": "Transmettre le dossier au SIU. Demander à l'assuré le rapport de police ou le dépôt de plainte. Planifier l'expertise du véhicule.",
+          "j15": "Vérifier le lien avec le dossier partageant la même IP. Examiner les liens entre l'assuré et REP-007. Relancer l'assuré s'il n'a pas fourni la plainte.",
+          "j30": "Faire le point sur le retour du SIU et de l'expertise. Décider de la suite de l'instruction. Réévaluer le recours si un tiers est identifié."
         },
         "avertissement": "Brouillon — aucun envoi réel."
       },
@@ -218,15 +220,15 @@
           {
             "phase": "analyse",
             "numero": 1,
-            "debut_ms": 1,
-            "fin_ms": 1850,
-            "duree_ms": 1849,
+            "debut_ms": 0,
+            "fin_ms": 2342,
+            "duree_ms": 2342,
             "stop_reason": "tool_use",
             "usage": {
               "entree": 4,
               "sortie": 64,
-              "cache_lecture": 0,
-              "cache_creation": 2846
+              "cache_lecture": 2374,
+              "cache_creation": 683
             },
             "outils": [
               {
@@ -296,31 +298,31 @@
                   "source": "portefeuille fictif de démonstration",
                   "periode": "2024 — portefeuille fictif historique, non aligné sur la date du dossier"
                 },
-                "duree_ms": 0
+                "duree_ms": 1
               }
             ]
           },
           {
             "phase": "analyse",
             "numero": 2,
-            "debut_ms": 1850,
-            "fin_ms": 9512,
-            "duree_ms": 7662,
+            "debut_ms": 2343,
+            "fin_ms": 8821,
+            "duree_ms": 6478,
             "stop_reason": "tool_use",
             "usage": {
               "entree": 2,
-              "sortie": 994,
-              "cache_lecture": 2846,
+              "sortie": 784,
+              "cache_lecture": 3057,
               "cache_creation": 628
             },
             "outils": [
               {
                 "nom": "proposer_decision",
                 "entree": {
-                  "synthese": "Dossier routé ALERTE_SIU par les règles (score 30/50), sur deux signaux : IP partagée avec un autre dossier et réparateur REP-007 très présent. L'historique du portefeuille fictif montre 9 dossiers pour REP-007, tous en 2024, de types variés et pour des montants très inégaux. Aucun rapport de police n'est fourni, donc le recours n'a pas été évalué.",
+                  "synthese": "Dossier en ALERTE_SIU (score 30/50), routage non modifiable. Signaux : IP partagée avec un autre dossier et réparateur REP-007 très présent (9 dossiers). Aucun rapport de police et délit de fuite sans témoin : recours impossible à évaluer.",
                   "reason_codes_commentes": [
-                    "Adresse IP partagée avec 1 autre dossier sur 30 jours : signal isolé et modéré. Il ne prouve pas à lui seul un lien entre les deux dossiers (foyer ou réseau partagé possibles). Le dossier ne dit rien de l'autre dossier.",
-                    "Réparateur REP-007 impliqué dans 9 autres dossiers sur 90 jours : l'historique consulté compte 9 dossiers, mais datés de 2024 (mars à décembre). Cela ne correspond pas à une fenêtre de 90 jours autour de la déclaration de 2026. Le chiffre du dossier est une donnée d'enrichissement simulée, pas un calcul sur le portefeuille."
+                    "IP partagée avec 1 autre dossier sur 30 jours : lien possible entre dossiers, à vérifier (pas une preuve en soi).",
+                    "REP-007 impliqué dans 9 dossiers sur 90 jours (donnée d'enrichissement simulée) : l'historique du portefeuille fictif confirme 9 dossiers, mais datés de 2024 et de types variés, dont 5 accidents auto de 813 à 15 140 €."
                   ],
                   "recours": {
                     "evalue": false,
@@ -330,52 +332,53 @@
                     "part_responsabilite_tiers_pct": 0,
                     "certitude": "Sans objet",
                     "elements_factuels": [
-                      "Aucun rapport de police fourni : tiers et part de responsabilité non identifiables."
+                      "Aucun rapport de police fourni",
+                      "Tiers non identifié (délit de fuite déclaré), aucun témoin"
                     ]
                   },
                   "actions_proposees": [
-                    "Maintenir le routage ALERTE_SIU et transmettre le dossier au SIU avec l'historique de REP-007.",
-                    "Identifier l'autre dossier lié à la même adresse IP et vérifier les liens éventuels avec l'assuré.",
-                    "Demander le devis ou la facture du réparateur et les justificatifs du sinistre (montant réclamé 4 800 €, franchise 500 €).",
-                    "Demander un rapport de police ou un constat amiable afin d'évaluer un éventuel recours."
+                    "Transmettre au SIU conformément au routage ALERTE_SIU",
+                    "Demander le rapport de police / dépôt de plainte pour le délit de fuite",
+                    "Ne pas indemniser immédiatement : expertise préalable du véhicule",
+                    "Vérifier le lien entre les dossiers partageant la même IP",
+                    "Examiner les liens entre l'assuré et REP-007"
                   ],
                   "points_d_attention": [
-                    "Les champs reparateur_count_90d et ip_count_30d sont simulés pour la démonstration.",
-                    "L'historique de REP-007 date de 2024 et n'est pas aligné sur la date de déclaration (2026-09-26).",
-                    "Les signaux sont des indices, pas une preuve de fraude.",
-                    "Police souscrite le 2025-08-27, soit environ 13 mois avant la déclaration : ancienneté sans particularité.",
-                    "Le recours n'a pas pu être examiné faute de rapport de police."
+                    "Pression à l'indemnisation immédiate et refus d'attendre l'expertise : à noter comme élément de contexte, sans conclure à la fraude.",
+                    "Historique réparateur daté de 2024, non aligné sur la date du dossier (2026) : portée limitée.",
+                    "Absence de rapport de police et de témoin : circonstances non vérifiables.",
+                    "Souscription il y a environ 13 mois."
                   ]
                 },
                 "sortie": "valide",
-                "duree_ms": 1
+                "duree_ms": 2
               }
             ]
           },
           {
             "phase": "finalisation",
             "numero": 1,
-            "debut_ms": 9515,
-            "fin_ms": 12732,
-            "duree_ms": 3217,
+            "debut_ms": 8825,
+            "fin_ms": 12935,
+            "duree_ms": 4110,
             "stop_reason": "tool_use",
             "usage": {
               "entree": 4,
-              "sortie": 395,
-              "cache_lecture": 3474,
-              "cache_creation": 1260
+              "sortie": 463,
+              "cache_lecture": 3685,
+              "cache_creation": 1052
             },
             "outils": [
               {
                 "nom": "finaliser_dossier",
                 "entree": {
                   "statut_final": "TRANSMIS_SIU",
-                  "synthese": "Proposition validée par le gestionnaire. Le dossier POL-78234 reste en ALERTE_SIU (score 30/50) à cause d'une IP partagée et de la forte présence du réparateur REP-007. Il est transmis au SIU. Le recours n'a pas été évalué, faute de rapport de police.",
+                  "synthese": "Décision validée par le gestionnaire. Routage ALERTE_SIU (score 30/50) : dossier transmis au SIU. Signaux : IP partagée et réparateur REP-007 récurrent. Pas de rapport de police, tiers non identifié (délit de fuite) : recours non évalué. Indemnisation immédiate non accordée, expertise préalable requise.",
                   "brouillon_courrier_recours": "",
                   "plan_actions": {
-                    "j5": "Transmettre le dossier au SIU avec l'historique de REP-007. Identifier l'autre dossier lié à la même IP.",
-                    "j15": "Obtenir le devis ou la facture du réparateur et les justificatifs du sinistre. Demander un rapport de police ou un constat amiable.",
-                    "j30": "Faire le point sur le retour du SIU. Si un rapport de police est obtenu, évaluer le recours."
+                    "j5": "Transmettre le dossier au SIU. Demander à l'assuré le rapport de police ou le dépôt de plainte. Planifier l'expertise du véhicule.",
+                    "j15": "Vérifier le lien avec le dossier partageant la même IP. Examiner les liens entre l'assuré et REP-007. Relancer l'assuré s'il n'a pas fourni la plainte.",
+                    "j30": "Faire le point sur le retour du SIU et de l'expertise. Décider de la suite de l'instruction. Réévaluer le recours si un tiers est identifié."
                   }
                 },
                 "sortie": "valide",
@@ -388,36 +391,36 @@
           {
             "phase": "analyse",
             "debut_ms": 0,
-            "duree_ms": 9513,
+            "duree_ms": 8823,
             "issue": "pause"
           },
           {
             "phase": "finalisation",
-            "debut_ms": 9515,
-            "duree_ms": 3217,
+            "debut_ms": 8825,
+            "duree_ms": 4111,
             "issue": "termine"
           }
         ],
         "corrections": [],
         "usage_total": {
-          "entree": 11064,
-          "sortie": 1453,
-          "cache_lecture": 6320,
-          "cache_creation": 4734
+          "entree": 11489,
+          "sortie": 1311,
+          "cache_lecture": 9116,
+          "cache_creation": 2363
         },
-        "duree_totale_ms": 12730
+        "duree_totale_ms": 12934
       }
     },
     "rejeter": {
       "finalisation": {
         "statut_final": "REJETE_PAR_GESTIONNAIRE",
         "decision_gestionnaire": "rejeter",
-        "synthese": "Proposition rejetée par le gestionnaire. Motif saisi : « pièces justificatives insuffisantes » (motif fictif d'enregistrement). Le routage ALERTE_SIU calculé par les règles n'est pas modifié. Aucun rapport de police n'a été fourni, donc le recours n'a pas été évalué.",
+        "synthese": "Proposition rejetée par le gestionnaire. Motif saisi : pièces justificatives insuffisantes. Le routage fraude ALERTE_SIU calculé par le code reste inchangé. Aucun recours évalué (pas de rapport de police).",
         "brouillon_courrier_recours": "",
         "plan_actions": {
-          "j5": "Recenser les pièces justificatives manquantes (devis ou facture du réparateur, justificatifs du sinistre) et les demander à l'assuré.",
-          "j15": "Relancer si les pièces ne sont pas reçues, puis réexaminer le dossier avec les pièces obtenues.",
-          "j30": "Statuer sur la suite du dossier à partir des pièces reçues. Si aucune pièce n'arrive, documenter la situation."
+          "j5": "Informer l'assuré que les pièces fournies sont insuffisantes et lister les pièces à fournir (dont rapport de police ou dépôt de plainte).",
+          "j15": "Relancer l'assuré si les pièces ne sont pas reçues.",
+          "j30": "Réexaminer le dossier avec les pièces reçues, ou le clôturer à défaut."
         },
         "avertissement": "Brouillon — aucun envoi réel."
       },
@@ -426,15 +429,15 @@
           {
             "phase": "analyse",
             "numero": 1,
-            "debut_ms": 1,
-            "fin_ms": 1850,
-            "duree_ms": 1849,
+            "debut_ms": 0,
+            "fin_ms": 2342,
+            "duree_ms": 2342,
             "stop_reason": "tool_use",
             "usage": {
               "entree": 4,
               "sortie": 64,
-              "cache_lecture": 0,
-              "cache_creation": 2846
+              "cache_lecture": 2374,
+              "cache_creation": 683
             },
             "outils": [
               {
@@ -504,31 +507,31 @@
                   "source": "portefeuille fictif de démonstration",
                   "periode": "2024 — portefeuille fictif historique, non aligné sur la date du dossier"
                 },
-                "duree_ms": 0
+                "duree_ms": 1
               }
             ]
           },
           {
             "phase": "analyse",
             "numero": 2,
-            "debut_ms": 1850,
-            "fin_ms": 9512,
-            "duree_ms": 7662,
+            "debut_ms": 2343,
+            "fin_ms": 8821,
+            "duree_ms": 6478,
             "stop_reason": "tool_use",
             "usage": {
               "entree": 2,
-              "sortie": 994,
-              "cache_lecture": 2846,
+              "sortie": 784,
+              "cache_lecture": 3057,
               "cache_creation": 628
             },
             "outils": [
               {
                 "nom": "proposer_decision",
                 "entree": {
-                  "synthese": "Dossier routé ALERTE_SIU par les règles (score 30/50), sur deux signaux : IP partagée avec un autre dossier et réparateur REP-007 très présent. L'historique du portefeuille fictif montre 9 dossiers pour REP-007, tous en 2024, de types variés et pour des montants très inégaux. Aucun rapport de police n'est fourni, donc le recours n'a pas été évalué.",
+                  "synthese": "Dossier en ALERTE_SIU (score 30/50), routage non modifiable. Signaux : IP partagée avec un autre dossier et réparateur REP-007 très présent (9 dossiers). Aucun rapport de police et délit de fuite sans témoin : recours impossible à évaluer.",
                   "reason_codes_commentes": [
-                    "Adresse IP partagée avec 1 autre dossier sur 30 jours : signal isolé et modéré. Il ne prouve pas à lui seul un lien entre les deux dossiers (foyer ou réseau partagé possibles). Le dossier ne dit rien de l'autre dossier.",
-                    "Réparateur REP-007 impliqué dans 9 autres dossiers sur 90 jours : l'historique consulté compte 9 dossiers, mais datés de 2024 (mars à décembre). Cela ne correspond pas à une fenêtre de 90 jours autour de la déclaration de 2026. Le chiffre du dossier est une donnée d'enrichissement simulée, pas un calcul sur le portefeuille."
+                    "IP partagée avec 1 autre dossier sur 30 jours : lien possible entre dossiers, à vérifier (pas une preuve en soi).",
+                    "REP-007 impliqué dans 9 dossiers sur 90 jours (donnée d'enrichissement simulée) : l'historique du portefeuille fictif confirme 9 dossiers, mais datés de 2024 et de types variés, dont 5 accidents auto de 813 à 15 140 €."
                   ],
                   "recours": {
                     "evalue": false,
@@ -538,52 +541,53 @@
                     "part_responsabilite_tiers_pct": 0,
                     "certitude": "Sans objet",
                     "elements_factuels": [
-                      "Aucun rapport de police fourni : tiers et part de responsabilité non identifiables."
+                      "Aucun rapport de police fourni",
+                      "Tiers non identifié (délit de fuite déclaré), aucun témoin"
                     ]
                   },
                   "actions_proposees": [
-                    "Maintenir le routage ALERTE_SIU et transmettre le dossier au SIU avec l'historique de REP-007.",
-                    "Identifier l'autre dossier lié à la même adresse IP et vérifier les liens éventuels avec l'assuré.",
-                    "Demander le devis ou la facture du réparateur et les justificatifs du sinistre (montant réclamé 4 800 €, franchise 500 €).",
-                    "Demander un rapport de police ou un constat amiable afin d'évaluer un éventuel recours."
+                    "Transmettre au SIU conformément au routage ALERTE_SIU",
+                    "Demander le rapport de police / dépôt de plainte pour le délit de fuite",
+                    "Ne pas indemniser immédiatement : expertise préalable du véhicule",
+                    "Vérifier le lien entre les dossiers partageant la même IP",
+                    "Examiner les liens entre l'assuré et REP-007"
                   ],
                   "points_d_attention": [
-                    "Les champs reparateur_count_90d et ip_count_30d sont simulés pour la démonstration.",
-                    "L'historique de REP-007 date de 2024 et n'est pas aligné sur la date de déclaration (2026-09-26).",
-                    "Les signaux sont des indices, pas une preuve de fraude.",
-                    "Police souscrite le 2025-08-27, soit environ 13 mois avant la déclaration : ancienneté sans particularité.",
-                    "Le recours n'a pas pu être examiné faute de rapport de police."
+                    "Pression à l'indemnisation immédiate et refus d'attendre l'expertise : à noter comme élément de contexte, sans conclure à la fraude.",
+                    "Historique réparateur daté de 2024, non aligné sur la date du dossier (2026) : portée limitée.",
+                    "Absence de rapport de police et de témoin : circonstances non vérifiables.",
+                    "Souscription il y a environ 13 mois."
                   ]
                 },
                 "sortie": "valide",
-                "duree_ms": 1
+                "duree_ms": 2
               }
             ]
           },
           {
             "phase": "finalisation",
             "numero": 1,
-            "debut_ms": 12733,
-            "fin_ms": 15924,
-            "duree_ms": 3191,
+            "debut_ms": 12937,
+            "fin_ms": 16622,
+            "duree_ms": 3685,
             "stop_reason": "tool_use",
             "usage": {
               "entree": 4,
-              "sortie": 419,
-              "cache_lecture": 3474,
-              "cache_creation": 1333
+              "sortie": 364,
+              "cache_lecture": 3685,
+              "cache_creation": 1125
             },
             "outils": [
               {
                 "nom": "finaliser_dossier",
                 "entree": {
                   "statut_final": "REJETE_PAR_GESTIONNAIRE",
-                  "synthese": "Proposition rejetée par le gestionnaire. Motif saisi : « pièces justificatives insuffisantes » (motif fictif d'enregistrement). Le routage ALERTE_SIU calculé par les règles n'est pas modifié. Aucun rapport de police n'a été fourni, donc le recours n'a pas été évalué.",
+                  "synthese": "Proposition rejetée par le gestionnaire. Motif saisi : pièces justificatives insuffisantes. Le routage fraude ALERTE_SIU calculé par le code reste inchangé. Aucun recours évalué (pas de rapport de police).",
                   "brouillon_courrier_recours": "",
                   "plan_actions": {
-                    "j5": "Recenser les pièces justificatives manquantes (devis ou facture du réparateur, justificatifs du sinistre) et les demander à l'assuré.",
-                    "j15": "Relancer si les pièces ne sont pas reçues, puis réexaminer le dossier avec les pièces obtenues.",
-                    "j30": "Statuer sur la suite du dossier à partir des pièces reçues. Si aucune pièce n'arrive, documenter la situation."
+                    "j5": "Informer l'assuré que les pièces fournies sont insuffisantes et lister les pièces à fournir (dont rapport de police ou dépôt de plainte).",
+                    "j15": "Relancer l'assuré si les pièces ne sont pas reçues.",
+                    "j30": "Réexaminer le dossier avec les pièces reçues, ou le clôturer à défaut."
                   }
                 },
                 "sortie": "valide",
@@ -596,24 +600,24 @@
           {
             "phase": "analyse",
             "debut_ms": 0,
-            "duree_ms": 9513,
+            "duree_ms": 8823,
             "issue": "pause"
           },
           {
             "phase": "finalisation",
-            "debut_ms": 12733,
-            "duree_ms": 3191,
+            "debut_ms": 12937,
+            "duree_ms": 3685,
             "issue": "termine"
           }
         ],
         "corrections": [],
         "usage_total": {
-          "entree": 11137,
-          "sortie": 1477,
-          "cache_lecture": 6320,
-          "cache_creation": 4807
+          "entree": 11562,
+          "sortie": 1212,
+          "cache_lecture": 9116,
+          "cache_creation": 2436
         },
-        "duree_totale_ms": 12704
+        "duree_totale_ms": 12508
       }
     }
   }
