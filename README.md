@@ -20,10 +20,12 @@ Ce dépôt montre une réponse **sous contrôle** : le modèle raisonne et rédi
 ## Comment ça marche
 
 ```
-dossier ──▶ validation stricte ──▶ règles (score /50) ──▶ triage (routage)
+dossier ──▶ validation stricte ──▶ règles (score /50) ──▶ routage des règles (plancher)
                                                               │
-        routage ≠ STP  OU  rapport de police fourni ◀─────────┤
-                │                                     STP sans rapport : aucun appel IA
+                      circonstances ou rapport non vides ──▶ Jev (monte d'un niveau au plus)
+                                                              │
+        routage final ≠ STP  OU  rapport de police fourni ◀───┤
+                │                                     STP sans rapport : l'agent n'est pas appelé
                 ▼
    quota du jour ──▶ agent à outils sans effet ──▶ proposition typée  [pause]
                                                           │
@@ -41,7 +43,7 @@ dossier ──▶ validation stricte ──▶ règles (score /50) ──▶ tri
 
 ## Garde-fous
 
-Chacun est couvert par un test automatisé (`npm test`, 141 tests, sans réseau ni clé) :
+Chacun est couvert par un test automatisé (`npm test`, 210 tests dont 1 `todo` volontaire, sans réseau ni clé) :
 
 - entrées strictement validées (champs inconnus refusés, bornes, longueurs) ;
 - STP sans rapport de police : **aucun appel au modèle**, aucun quota consommé ;
@@ -83,7 +85,7 @@ fraud-agent-demo/
 └── docs/           audit du 30/09/2026 (état d'origine)
 ```
 
-La régression logistique de `ml/` n'est ni exécutée ni affichée par la démo ; une partie probabiliste est prévue au lot 2.
+La régression logistique de `ml/` n'est ni exécutée ni affichée par la démo. Le lot 2 ajoute un triage par Jev (TypeSafe, via Vercel AI Gateway) sur les textes du dossier : il ne peut que relever le routage des règles d'un niveau, jamais l'abaisser (branche `lot2-jev`, voir `CLAUDE.md`).
 
 ## Lancer en local
 
@@ -92,7 +94,7 @@ Prérequis : Node 24 et npm (démo) ; Python 3.10+ avec `scikit-learn pandas num
 ```bash
 cd demo-web
 npm install
-npm test                          # 141 tests, aucun accès réseau
+npm test                          # 210 tests (dont 1 todo), aucun accès réseau
 node scripts/serveur-local.js     # démo locale, API simulée, sans clé ni coût
 ```
 
