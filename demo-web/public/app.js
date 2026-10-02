@@ -386,11 +386,13 @@ function afficherCarteJev(d) {
     const statutTexte = s.statut === "signal" ? "Signal" : s.statut === "neutre" ? "Neutre" : "Incertain — ignoré";
     const li = el("li", { classe: "jev-question" });
     li.append(el("span", { classe: "jev-libelle", texte: libelle }));
-    li.append(el("span", { classe: `jev-statut ${s.statut}`, texte: statutTexte }));
+    const statutP = el("span", { classe: "jev-statut-p" });
+    statutP.append(el("span", { classe: `jev-statut ${s.statut}`, texte: statutTexte }));
     if (typeof s.p === "number") {
       const pTxt = s.p.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      li.append(el("span", { classe: "jev-p aide", texte: `(p = ${pTxt})` }));
+      statutP.append(el("span", { classe: "jev-p aide", texte: `(p = ${pTxt})` }));
     }
+    li.append(statutP);
     ul.append(li);
   }
   section.append(ul);

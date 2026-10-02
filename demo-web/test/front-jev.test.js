@@ -66,10 +66,11 @@ test("COMPARAISON_JEV : mesures du 02/10/2026 présentes, deux tâches distincte
   assert.match(APP, /Jev trie, l'agent enquête et rédige : ce ne sont pas les mêmes tâches\./);
 });
 
-test("afficherCarteJev : aucun innerHTML (DOM-only)", () => {
+test("afficherCarteJev : aucun innerHTML (DOM-only) ; jev-statut-p groupe statut et probabilité", () => {
   const bloc = APP.slice(APP.indexOf("function afficherCarteJev"), APP.indexOf("\nfunction ", APP.indexOf("function afficherCarteJev") + 1));
   assert.doesNotMatch(bloc, /innerHTML|outerHTML|insertAdjacentHTML/);
   assert.match(bloc, /createElement|el\(/);
+  assert.match(bloc, /jev-statut-p/);
 });
 
 test("bandeauRejeu : mentionne l'absence de triage Jev", () => {
