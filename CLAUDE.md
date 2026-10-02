@@ -89,7 +89,7 @@ dossier ──▶ validation stricte ──▶ règles (score /50) ──▶ rou
 ## Ce que je ne veux pas
 
 - Aucune affirmation non vérifiée dans la démo ou la documentation (chiffres, KPI, promesses de confidentialité).
-- Pas de « zéro stockage » ni de « jamais envoyée ailleurs » : les saisies sont traitées par Anthropic (conservation jusqu'à 30 jours, sauf exceptions), l'état de session est gardé 30 min dans Upstash, hébergement aux États-Unis.
+- Pas de « zéro stockage » ni de « jamais envoyée ailleurs » : les saisies sont traitées par Anthropic (conservation jusqu'à 30 jours, sauf exceptions) ; si un récit ou rapport est saisi, ces textes sont transmis à Jev (TypeSafe AI, via Vercel AI Gateway) — durée de conservation non fixée par TypeSafe AI (« aussi longtemps que raisonnablement nécessaire »). Jamais : « zéro stockage », ZDR (indisponible en Hobby), « données en Europe ». L'état de session est gardé 30 min dans Upstash. Hébergement aux États-Unis.
 - Pas de fusion ni de déploiement en production par Claude.
 
 ## Suite prévue

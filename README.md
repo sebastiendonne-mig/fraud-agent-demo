@@ -70,7 +70,7 @@ Tarif de référence : celui de `demo-web/config/agent.json`, à revérifier ava
 
 ## Confidentialité
 
-Les données saisies sont envoyées à Anthropic, qui les conserve **jusqu'à 30 jours** (sauf exceptions : application de la politique d'usage, obligations légales — [page officielle](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention)). L'état d'une analyse est gardé 30 minutes dans une base Upstash pour permettre la validation, puis supprimé. Hébergement aux États-Unis. **N'entrez aucune donnée réelle.**
+Les données saisies sont envoyées à Anthropic, qui les conserve **jusqu'à 30 jours** (sauf exceptions : application de la politique d'usage, obligations légales — [page officielle](https://platform.claude.com/docs/en/manage-claude/api-and-data-retention)). Si des circonstances ou un rapport de police sont saisis, ces textes sont également transmis à **Jev (TypeSafe AI, via Vercel AI Gateway)** pour le triage automatique. TypeSafe AI s'engage à ne pas entraîner ses modèles sur ces données ; le code demande en outre le non-entraînement à chaque appel. TypeSafe AI ne fixe pas de durée de conservation ([politique de confidentialité](https://typesafe.ai/legal/privacy-policy)). L'état d'une analyse est gardé 30 minutes dans une base Upstash pour permettre la validation, puis supprimé. Hébergement aux États-Unis. **N'entrez aucune donnée réelle.**
 
 ## Structure
 
