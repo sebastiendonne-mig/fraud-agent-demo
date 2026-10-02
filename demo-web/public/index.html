@@ -37,6 +37,9 @@
       --c-pied-texte: var(--tk-white);          --c-pied-fond: var(--tk-navy);
       --c-pied-lien-texte: var(--tk-cyan-light); --c-pied-lien-fond: var(--tk-navy);
       --c-desactive-texte: var(--tk-gray-600);  --c-desactive-fond: var(--tk-gray-200);
+      --c-jev-signal-texte: var(--tk-white);       --c-jev-signal-fond: var(--tk-navy);
+      --c-jev-neutre-texte: var(--tk-gray-600);    --c-jev-neutre-fond: var(--tk-gray-100);
+      --c-jev-incertain-texte: var(--tk-gray-600); --c-jev-incertain-fond: var(--tk-white);
 
       --g-champ-trait: var(--tk-gray-600);      --g-champ-fond: var(--tk-white);
       --g-bouton2-trait: var(--tk-navy);        --g-bouton2-fond: var(--tk-white);
@@ -223,6 +226,22 @@
     .tour-entete { font-weight: var(--tk-weight-semibold); color: var(--c-titre-texte); }
     .tour-meta { font-size: var(--tk-text-sm); color: var(--c-attenue-texte); }
 
+    /* ── Carte Jev ── */
+    .liste-jev { list-style: none; display: grid; gap: var(--tk-space-2); }
+    .jev-question { display: flex; flex-wrap: wrap; gap: var(--tk-space-2); align-items: baseline; font-size: var(--tk-text-sm); }
+    .jev-libelle { color: var(--c-base-texte); }
+    .jev-statut {
+      display: inline-block; border-radius: var(--tk-radius-full); padding: 2px 8px;
+      font-size: var(--tk-text-xs); font-weight: var(--tk-weight-semibold);
+    }
+    .jev-statut.signal { background: var(--c-jev-signal-fond); color: var(--c-jev-signal-texte); }
+    .jev-statut.neutre { background: var(--c-jev-neutre-fond); color: var(--c-jev-neutre-texte); }
+    .jev-statut.incertain { background: var(--c-jev-incertain-fond); color: var(--c-jev-incertain-texte); }
+    .jev-p { color: var(--c-attenue-texte); }
+    .jev-effet { margin-top: var(--tk-space-3); font-weight: var(--tk-weight-medium); }
+    .jev-perf { font-size: var(--tk-text-sm); color: var(--c-attenue-texte); margin-top: var(--tk-space-2); }
+    .jev-comparaison { font-size: var(--tk-text-xs); color: var(--c-attenue-texte); margin-top: var(--tk-space-2); }
+
     @media (max-width: 640px) {
       .container { padding: var(--tk-space-6) var(--tk-space-4); }
       .tk-header { padding: 0 var(--tk-space-4); }
@@ -261,12 +280,12 @@
       <summary>Comment ça marche</summary>
       <ol class="etapes-explication">
         <li><strong>Règles déterministes.</strong> Quatre règles explicables (adresse IP partagée, réseau de réparateurs, déclaration précoce, montant atypique) calculent un score sur 50. C'est un port fidèle du script Python du projet, testé à l'identique.</li>
-        <li><strong>Triage.</strong> Le score donne le routage : traitement automatique sous 15, investigation de 15 à 29, alerte SIU à partir de 30. Ces seuils sont un choix de démonstration, non calibré sur des données réelles. Le routage est une règle métier : l'agent ne peut pas le modifier.</li>
+        <li><strong>Triage.</strong> Les règles calculent un score (sur 50) et donnent un premier routage : traitement automatique sous 15, investigation de 15 à 29, alerte SIU à partir de 30. Si le dossier contient un récit ou un rapport de police, Jev (TypeSafe AI) les lit et peut relever le routage d'un cran — jamais l'abaisser. Ces seuils sont un choix de démonstration, non calibrés. Le routage est fixé par le code : l'agent ne peut pas le modifier.</li>
         <li><strong>Agent à outils sans effet réel.</strong> Claude n'est appelé que si le dossier n'est pas en traitement automatique ou si un rapport de police est fourni. Ses outils ne font que lire le portefeuille fictif ou calculer : aucun envoi, aucune écriture.</li>
         <li><strong>Décision typée.</strong> L'agent termine par une proposition structurée. Le serveur recalcule les chiffres (montant du recours, seuil) et signale toute correction.</li>
         <li><strong>Validation humaine.</strong> Rien n'est finalisé sans votre décision. Le dossier final est un brouillon : aucun envoi réel.</li>
-        <li><strong>Limites.</strong> Démonstrateur sur données entièrement fictives, pas un outil de production. Le nombre d'analyses réelles par jour est limité ; au-delà, un rejeu signalé est affiché. Les seuils de démonstration ne sont pas calibrés sur des données réelles. Le montant de recours affiché est un montant brut : la franchise n'est pas traitée dans cette démo.</li>
-        <li><strong>Chiffres mesurés le 01/10/2026.</strong> Environ 0,02 à 0,03 $ par analyse complète (plus élevé au premier appel après une période d'inactivité, cache de prompt froid), 6 à 10 s pour l'analyse et 3 à 6 s pour la finalisation, 1 à 2 tours selon le dossier, mesurés sur 3 scénarios fictifs.</li>
+        <li><strong>Limites.</strong> Démonstrateur sur données entièrement fictives, pas un outil de production. Le nombre d'analyses réelles par jour est limité ; au-delà, un rejeu signalé est affiché. Les seuils de démonstration ne sont pas calibrés sur des données réelles. Le montant de recours affiché est un montant brut : la franchise n'est pas traitée dans cette démo. Les probabilités fournies par Jev sont des indicateurs non calibrés, sans valeur de preuve.</li>
+        <li><strong>Chiffres mesurés.</strong> Analyse complète par l'agent : environ 0,0205 $ (3 analyses, 02/10/2026), 6 à 10 s pour l'analyse et 3 à 6 s pour la finalisation (01 et 02/10/2026), 1 à 2 tours selon le dossier. Lecture par Jev : 0,00003 à 0,000047 $ et moins d'une seconde par appel (4 appels, 02/10/2026).</li>
       </ol>
     </details>
   </section>
@@ -308,9 +327,9 @@
           </div>
         </fieldset>
         <div class="champ large">
-          <label for="circonstances">Circonstances déclarées (facultatif)</label>
-          <textarea id="circonstances" rows="3" maxlength="2000" placeholder="Décrivez les faits en quelques phrases (données fictives)…"></textarea>
-          <span class="aide">2 000 caractères au maximum.</span>
+          <label for="circonstances">Circonstances déclarées par l'assuré (facultatif)</label>
+          <textarea id="circonstances" rows="3" maxlength="2000" placeholder="Décrivez les faits en quelques phrases (données fictives). Ce texte est transmis à Jev pour le triage automatique."></textarea>
+          <span class="aide">2 000 caractères au maximum. Transmis à Jev (TypeSafe AI) si renseigné.</span>
         </div>
         <div class="champ large">
           <label for="rapport_police">Rapport de police (facultatif, nécessaire pour examiner un recours)</label>
@@ -324,6 +343,7 @@
           <li><strong>Données fictives uniquement</strong> : n'entrez aucune donnée réelle (nom, plaque, téléphone…).</li>
           <li><strong>Vous interagissez avec une IA</strong> (Claude, d'Anthropic). Ses propositions sont soumises à une validation humaine.</li>
           <li><strong>Traitement par Anthropic, qui conserve les données jusqu'à 30 jours</strong>, sauf exceptions (application de la politique d'usage, obligations légales). <a href="https://platform.claude.com/docs/en/manage-claude/api-and-data-retention" target="_blank" rel="noopener noreferrer">Page officielle</a>.</li>
+          <li><strong>Triage automatique (Jev, TypeSafe AI, via Vercel AI Gateway) :</strong> le récit des circonstances et le rapport de police, s'ils sont présents, sont transmis à Jev et traités aux États-Unis. TypeSafe AI s'engage à ne pas entraîner ses modèles sur ces données ; la démo demande en outre le non-entraînement à chaque appel. TypeSafe AI ne fixe pas de durée de conservation : sa politique prévoit de conserver les données aussi longtemps que raisonnablement nécessaire à ses services ou à ses activités — <a href="https://typesafe.ai/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Politique de confidentialité (en anglais)</a>.</li>
           <li><strong>Hébergement aux États-Unis</strong> : fonctions Vercel, Anthropic et Upstash.</li>
           <li><strong>Conservation temporaire</strong> : l'état de l'analyse est gardé 30 minutes pour permettre la validation, puis supprimé.</li>
         </ul>
@@ -371,6 +391,8 @@
       <h3>Signaux des règles</h3>
       <ul class="liste" id="reasonCodes"></ul>
     </section>
+
+    <section class="carte" id="carteJev" hidden></section>
 
     <section class="carte" id="carteDeroule">
       <h2>Déroulé</h2>
