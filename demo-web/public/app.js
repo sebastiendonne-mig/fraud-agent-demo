@@ -217,6 +217,7 @@ function sourceRoutageTexte(d) {
   }
   if (jev) return "Routage calculé par les règles — Jev n'a relevé aucun niveau. L'agent ne peut pas le modifier.";
   if (repli) return "Routage calculé par les règles (triage Jev indisponible). L'agent ne peut pas le modifier.";
+  if (d && d.motif === "quota_atteint") return "Routage calculé par les règles — sans triage Jev (quota d'analyses du jour atteint). L'agent ne peut pas le modifier.";
   return "Routage calculé par les règles — aucun texte à analyser. L'agent ne peut pas le modifier.";
 }
 

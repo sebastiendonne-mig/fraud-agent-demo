@@ -51,6 +51,18 @@ test("sourceRoutageTexte : 4 cas couverts", () => {
   assert.match(APP, /aucun texte à analyser\. L'agent ne peut pas le modifier\./);
 });
 
+test("sourceRoutageTexte : libellé « quota d'analyses atteint » (motif serveur) distinct de « aucun texte à analyser »", () => {
+  const bloc = APP.slice(APP.indexOf("function sourceRoutageTexte"), APP.indexOf("\n}\n", APP.indexOf("function sourceRoutageTexte")));
+  const iQuota = bloc.indexOf('d.motif === "quota_atteint"');
+  const iVide = bloc.indexOf("aucun texte à analyser");
+  assert.ok(iQuota > 0, "le libellé quota se base sur d.motif");
+  assert.match(bloc, /sans triage Jev \(quota d'analyses du jour atteint\)\. L'agent ne peut pas le modifier\./);
+  assert.ok(iVide > iQuota, "« aucun texte à analyser » reste le cas par défaut, après le cas quota");
+  const fn = new Function(`const ROUTAGES = { STP: { libelle: "STP" } }; ${bloc}\n}; return sourceRoutageTexte;`)();
+  assert.match(fn({ motif: "quota_atteint", jev: null, repli_jev: null }), /quota d'analyses du jour atteint/);
+  assert.match(fn({ jev: null, repli_jev: null }), /aucun texte à analyser/);
+});
+
 test("LIBELLES_JEV : 4 questions avec libellés exacts", () => {
   assert.match(APP, /contradiction_interne: "Contradiction interne"/);
   assert.match(APP, /divergence_recit_rapport: "Divergence récit \/ rapport de police"/);
