@@ -53,7 +53,7 @@ async function monter({ script = [], env = "production", answers, fetchFaux, dis
       disponible: (req) => disponible && J.lireJetonOidc(req, {}) !== null,
       evaluer: (textes, req) => J.evaluer(textes, {
         jeton: J.lireJetonOidc(req, {}),
-        deps: { ...(fetchFaux ? { fetch: fetchFaux } : { modele }), journal: journal || ((l) => lignes.push(l)) },
+        deps: { ...(fetchFaux ? { fetch: fetchFaux } : { modele }), now: horloge.now, journal: journal || ((l) => lignes.push(l)) },
       }),
     },
   };
