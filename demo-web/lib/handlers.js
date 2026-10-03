@@ -9,7 +9,8 @@ const crypto = require("crypto");
 const CONFIG_AGENT = require("../config/agent.json");
 const { validerDossier, validerFinalisation } = require("./validate.js");
 const { evaluerDossier } = require("./regles.js");
-const { trier, modeAgent } = require("./triage.js");
+const { trier, modeAgent, trierAvecJev } = require("./triage.js");
+const jev = require("./jev.js");
 const { creerEtat, runLoop, reprendreApresDecision, traceClient } = require("./agent.js");
 const { creerStore, creerRedisDepuisEnv } = require("./store.js");
 const { chargerRejeu } = require("./replay.js");
@@ -30,7 +31,7 @@ function reponseRepli(motif, scenario, extraire, commun = {}) {
   return {
     mode: "rejeu",
     motif,
-    bandeau: `Rejeu d'une exécution réelle du ${rejeu.contenu.enregistre_le} — ce n'est pas l'analyse de votre saisie.`,
+    bandeau: `Rejeu d'une exécution réelle du ${rejeu.contenu.enregistre_le} — ce n'est pas l'analyse de votre saisie. Routage des règles seules, sans triage Jev : en direct, le routage peut différer.`,
     rejeu: { scenario: rejeu.scenario, ...partie },
     ...commun,
   };
@@ -41,6 +42,39 @@ function refuserCorps(res, corps) {
   if (corps === CORPS_TROP_GROS) return repondre(res, 413, { erreur: "corps_trop_volumineux" }), true;
   if (corps === CORPS_INVALIDE) return repondre(res, 400, { erreur: "json_invalide" }), true;
   return false;
+}
+
+// Triage avec Jev, sans jamais laisser remonter d'erreur : au pire, les règles seules.
+// Le quota Jev est compté (avant l'appel) par trierAvecJev, uniquement si Jev va être appelé.
+async function trierSansErreur(regles, dossier, req, deps, ms) {
+  try {
+    return await trierAvecJev(regles, dossier, {
+      jev: deps.jev ? { disponible: () => deps.jev.disponible(req), evaluer: (textes) => deps.jev.evaluer(textes, req) } : null,
+      async quotaJev() {
+        const store = deps.store();
+        if (!store) throw new Error("stockage absent");
+        return store.incrementerQuotaJev(ms);
+      },
+    });
+  } catch {
+    const base = trier(regles);
+    return { routage: base.routage, routage_regles: base.routage, source: base.source, jev: null, repli_jev: "jev_erreur", quota_jev: null };
+  }
+}
+
+// Construit l'objet commun transmis au client. Accepte la forme triage complète
+// (trierSansErreur : routage_regles, jev, repli_jev, quota_jev) et la forme
+// baseRoutage seule (trier : routage + source uniquement, sans Jev).
+function communDossier(reglesResultat, triage) {
+  return {
+    regles: { score: reglesResultat.score, reason_codes: reglesResultat.reason_codes, detail: reglesResultat.detail },
+    routage: triage.routage,
+    routage_regles: triage.routage_regles ?? triage.routage,
+    source_routage: triage.source,
+    jev: triage.jev ?? null,
+    repli_jev: triage.repli_jev ?? null,
+    quota_jev: triage.quota_jev ?? null,
+  };
 }
 
 // ── Appel 1 : analyse ────────────────────────────────────────────────────
@@ -61,16 +95,38 @@ function creerHandlerAnalyse(deps) {
 
       const dossier = v.valeur;
       scenario = dossier.scenario;
-      // Règles et triage : déterministes, toujours calculés et renvoyés
+      // Règles : déterministes, toujours calculées et renvoyées
       const regles = evaluerDossier(dossier);
-      const { routage, source } = trier(regles);
+      const baseRoutage = trier(regles);
+      const modeAnticipe = modeAgent(baseRoutage.routage, dossier.rapport_police);
+      // Pré-vérification quota (lecture seule) : si épuisé, rejeu immédiat avant tout appel Jev.
+      // STP de base : pré-vérification ignorée — retour précoce de toute façon.
+      // TODO lot 3 : si Jev relève un STP en INVESTIGATION et que le quota est épuisé,
+      //   Jev sera appelé inutilement ; le rejeu se déclenchera au contrôle old-style ci-dessous.
+      if (modeAnticipe !== null) {
+        try {
+          const storeQ = deps.store();
+          if (storeQ) {
+            const lu = await storeQ.lireQuota(debut);
+            if (lu.restantes <= 0) {
+              commun = communDossier(regles, baseRoutage);
+              return repli("quota_atteint");
+            }
+          }
+        } catch { /* pré-vérification impossible : le contrôle old-style prendra le relais */ }
+      }
+      // Triage avec Jev (appel réseau éventuel)
+      const triage = await trierSansErreur(regles, dossier, req, deps, debut);
+      const { routage } = triage;
       const mode = modeAgent(routage, dossier.rapport_police);
-      commun = { regles: { score: regles.score, reason_codes: regles.reason_codes, detail: regles.detail }, routage, source_routage: source };
+      commun = communDossier(regles, triage);
 
       if (!mode) {
         return repondre(res, 200, {
           mode: "regles_seules", ...commun,
-          message: "Dossier en traitement automatique (STP), sans rapport de police : aucun appel à l'IA.",
+          message: triage.jev
+            ? "Dossier en traitement automatique (STP), sans rapport de police : l'agent n'est pas appelé (triage Jev effectué)."
+            : "Dossier en traitement automatique (STP), sans rapport de police : aucun appel à l'IA.",
         });
       }
 
@@ -170,7 +226,14 @@ function creerHandlerQuota(deps) {
       const store = deps.store();
       if (!store) return repondre(res, 503, { erreur: "indisponible" });
       const { restantes, limite } = await store.lireQuota(deps.now());
-      return repondre(res, 200, { restantes, limite }, { cache: CACHE_QUOTA });
+      const reponse = { restantes, limite };
+      try {
+        const j = await store.lireQuotaJev(deps.now());
+        reponse.jev = { restantes: j.restantes, limite: j.limite };
+      } catch {
+        // le compteur Jev est secondaire : son absence n'empêche pas d'afficher le quota des analyses
+      }
+      return repondre(res, 200, reponse, { cache: CACHE_QUOTA });
     } catch {
       return repondre(res, 503, { erreur: "indisponible" });
     }
@@ -191,6 +254,11 @@ function depsReelles(env = process.env) {
         store = redis ? creerStore({ redis, env: env.VERCEL_ENV }) : null;
       }
       return store;
+    },
+    // Jev : jeton OIDC de la requête (jamais AI_GATEWAY_API_KEY). Sans jeton, Jev n'est pas appelé.
+    jev: {
+      disponible: (req) => jev.lireJetonOidc(req, env) !== null,
+      evaluer: (textes, req) => jev.evaluer(textes, { jeton: jev.lireJetonOidc(req, env) }),
     },
     client() {
       if (client === undefined) {

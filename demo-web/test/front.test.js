@@ -17,9 +17,8 @@ test("anti-XSS : aucun innerHTML, outerHTML, insertAdjacentHTML ni document.writ
 });
 
 test("vocabulaire interdit absent (ML, probabilité, Azure, régression, zéro stockage)", () => {
-  for (const [nom, src] of [["index.html", HTML], ["app.js", APP]]) {
-    assert.doesNotMatch(src, /\bML\b|probabil|azure|régression|zéro stockage/i, nom);
-  }
+  assert.doesNotMatch(HTML, /\bML\b|azure|régression|zéro stockage/i, "index.html");
+  assert.doesNotMatch(APP, /\bML\b|probabil|azure|régression|zéro stockage/i, "app.js");
 });
 
 test("code mort et reliquats supprimés (proxy, step-synapse, couleurs Fluent, onclick, styles en ligne)", () => {
@@ -32,26 +31,28 @@ test("code mort et reliquats supprimés (proxy, step-synapse, couleurs Fluent, o
   assert.equal((HTML.match(/<script(?![^>]*\bsrc=)[^>]*>/g) || []).length, 0, "aucun script en ligne");
 });
 
-test("bloc d'information du visiteur : 5 phrases exactes, placé avant le bouton d'envoi, lien officiel", () => {
+test("bloc d'information du visiteur : 6 phrases exactes, placé avant le bouton d'envoi, liens officiels", () => {
   const debut = HTML.indexOf('id="infoVisiteur"');
   const bouton = HTML.indexOf('id="boutonAnalyser"');
   assert.ok(debut > 0 && debut < bouton);
   const bloc = texteSeul(HTML.slice(debut, HTML.indexOf("</aside>", debut)));
   for (const phrase of [
     "Données fictives uniquement : n'entrez aucune donnée réelle (nom, plaque, téléphone…).",
-    "Vous interagissez avec une IA (Claude, d'Anthropic). Ses propositions sont soumises à une validation humaine.",
+    "Vous interagissez avec des IA (Claude, d'Anthropic, et Jev, de TypeSafe AI). Les propositions de l'agent sont soumises à une validation humaine.",
     "Traitement par Anthropic, qui conserve les données jusqu'à 30 jours, sauf exceptions (application de la politique d'usage, obligations légales).",
     "Hébergement aux États-Unis : fonctions Vercel, Anthropic et Upstash.",
     "Conservation temporaire : l'état de l'analyse est gardé 30 minutes pour permettre la validation, puis supprimé.",
+    "TypeSafe AI ne fixe pas de durée de conservation : sa politique prévoit de conserver les données aussi longtemps que raisonnablement nécessaire à ses services ou à ses activités",
   ]) assert.ok(bloc.includes(phrase), phrase);
   assert.match(HTML.slice(debut, bouton), /href="https:\/\/platform\.claude\.com\/docs\/en\/manage-claude\/api-and-data-retention"/);
+  assert.match(HTML.slice(debut, bouton), /href="https:\/\/typesafe\.ai\/legal\/privacy-policy"/);
 });
 
 test("« Comment ça marche » : 6 points dont « Limites », seuils présentés comme un choix de démo", () => {
   const bloc = HTML.slice(HTML.indexOf('class="etapes-explication"'), HTML.indexOf("</ol>", HTML.indexOf('class="etapes-explication"')));
   assert.equal((bloc.match(/<li>/g) || []).length, 7);
   assert.match(bloc, /Limites\./);
-  assert.match(texteSeul(bloc), /choix de démonstration, non calibré sur des données réelles/);
+  assert.match(texteSeul(bloc), /choix de démonstration, non calibrés/);
   assert.match(texteSeul(bloc), /pas un outil de production/);
   assert.match(texteSeul(bloc), /rejeu signalé/);
 });
@@ -114,9 +115,9 @@ test("montant de recours libellé brut, franchise non traitée annoncée ; compt
   assert.match(HTML, /Déclarations depuis la même IP sur 30&nbsp;jours \(compteur simulé\)/);
 });
 
-test("« Chiffres mesurés le 01/10/2026 » : coût, durées et tours datés, dans « Comment ça marche »", () => {
+test("« Chiffres mesurés » : coût agent + Jev datés, durées agent + Jev, dans « Comment ça marche »", () => {
   const bloc = texteSeul(HTML.slice(HTML.indexOf('class="etapes-explication"'), HTML.indexOf("</ol>", HTML.indexOf('class="etapes-explication"'))));
-  assert.match(bloc, /Chiffres mesurés le 01\/10\/2026\. Environ 0,02 à 0,03 \$ par analyse complète \(plus élevé au premier appel après une période d'inactivité, cache de prompt froid\), 6 à 10 s pour l'analyse et 3 à 6 s pour la finalisation, 1 à 2 tours selon le dossier, mesurés sur 3 scénarios fictifs\./);
+  assert.match(bloc, /Chiffres mesurés\. Analyse complète par l'agent : environ 0,0205 \$ \(3 analyses, 02\/10\/2026\), 6 à 10 s pour l'analyse et 3 à 6 s pour la finalisation \(01 et 02\/10\/2026\), 1 à 2 tours selon le dossier\. Lecture par Jev : 0,00003 à 0,000047 \$ et moins d'une seconde par appel \(4 appels, 02\/10\/2026\)\./);
 });
 
 test("budgets de temps inchangés : 180 / 120 s, maxDuration 240 / 180 s", () => {
@@ -125,4 +126,8 @@ test("budgets de temps inchangés : 180 / 120 s, maxDuration 240 / 180 s", () =>
   assert.equal(CONFIG.temps.finalisation.budget_ms, 120000);
   assert.equal(VERCEL.functions["api/analyze.js"].maxDuration, 240);
   assert.equal(VERCEL.functions["api/finalize.js"].maxDuration, 180);
+});
+
+test("aide du champ circonstances : mentionne Jev et « s'il est présent »", () => {
+  assert.match(HTML, /2 000 caractères au maximum\. Transmis à Jev \(TypeSafe AI\) s'il est présent\./);
 });

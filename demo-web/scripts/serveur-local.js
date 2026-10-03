@@ -106,9 +106,36 @@ function creerFauxModele(controle) {
   };
 }
 
+// ── Faux Jev : réponses construites selon le mode de capture ────────────────
+// Retourne une fonction (textes) => Promise<résultat> ou null (mode inconnu).
+// Modes : "releve" (signal → montée), "plafond" (signal, ALERTE_SIU déjà max),
+//         "incertain" (incertains seulement), "repli" (jev_erreur).
+function creerFauxJevFn(mode) {
+  const SIG = "signal", NEU = "neutre", INC = "incertain";
+  if (mode === "repli") return async () => ({ ok: false, motif: "jev_erreur" });
+  const configs = {
+    releve:   [{ id: "contradiction_interne", type: "boolean", p: 0.85, s: SIG }, { id: "divergence_recit_rapport", type: "boolean", p: 0.07, s: NEU }, { id: "cause_evoquee", type: "choice", p: 0.03, s: NEU }, { id: "pression_indemnisation", type: "score", p: 0.04, s: NEU }],
+    plafond:  [{ id: "contradiction_interne", type: "boolean", p: 0.87, s: SIG }, { id: "divergence_recit_rapport", type: "boolean", p: 0.06, s: NEU }, { id: "cause_evoquee", type: "choice", p: 0.02, s: NEU }, { id: "pression_indemnisation", type: "score", p: 0.05, s: NEU }],
+    incertain:[{ id: "contradiction_interne", type: "boolean", p: 0.45, s: INC }, { id: "divergence_recit_rapport", type: "boolean", p: 0.38, s: INC }, { id: "cause_evoquee", type: "choice", p: 0.35, s: INC }, { id: "pression_indemnisation", type: "score", p: 0.40, s: INC }],
+  };
+  const questions = configs[mode];
+  if (!questions) return null;
+  return async () => {
+    const statuts = {};
+    for (const q of questions) statuts[q.id] = { type: q.type, p: q.p, statut: q.s, confiance: null };
+    return {
+      ok: true, modele: "typesafe-ai/jev", reponses: {}, statuts,
+      signaux: questions.filter((q) => q.s === SIG).map((q) => q.id),
+      incertains: questions.filter((q) => q.s === INC).map((q) => q.id),
+      latence_ms: 250, cout_usd: 0.0000315, fournisseur: "typesafe-ai",
+      generation_id: "gen_CAPTURE", tokens_entree: 800, tokens_sortie: 18,
+    };
+  };
+}
+
 // ── Serveur ────────────────────────────────────────────────────────────────
 function demarrer({ port = 0 } = {}) {
-  const controle = { latence_ms: 400, panne504: false, rejeuStatique: false };
+  const controle = { latence_ms: 400, panne504: false, rejeuStatique: false, jev_fn: null };
   let redis = creerFauxRedis();
   let n = 0;
   const deps = {
@@ -116,6 +143,15 @@ function demarrer({ port = 0 } = {}) {
     uuid: () => `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}`,
     store: () => creerStore({ redis, env: "development" }),
     client: () => creerFauxModele(controle),
+    // Retourne null si jev_fn n'est pas activé → comportement identique à avant (pas de repli_jev)
+    get jev() {
+      if (!controle.jev_fn) return null;
+      return { disponible: () => true, evaluer: (textes) => controle.jev_fn(textes) };
+    },
+    get quotaJev() {
+      if (!controle.jev_fn) return undefined;
+      return async () => ({ autorise: true, utilisees: 0, limite: 6 });
+    },
   };
   const handlers = { "/api/analyze": H.creerHandlerAnalyse(deps), "/api/finalize": H.creerHandlerFinalisation(deps), "/api/quota": H.creerHandlerQuota(deps) };
 
@@ -127,6 +163,7 @@ function demarrer({ port = 0 } = {}) {
       if (url.searchParams.has("latence")) controle.latence_ms = Number(url.searchParams.get("latence"));
       if (url.searchParams.has("panne504")) controle.panne504 = url.searchParams.get("panne504") === "1";
       if (url.searchParams.has("rejeuStatique")) controle.rejeuStatique = url.searchParams.get("rejeuStatique") === "1";
+      if (url.searchParams.has("jev_mode")) { const m = url.searchParams.get("jev_mode"); controle.jev_fn = m ? (creerFauxJevFn(m) || null) : null; }
       if (url.searchParams.get("quota") === "epuise") {
         for (const k of redis.cles()) redis.donnees.delete(k);
         const jour = new Intl.DateTimeFormat("en-CA", { timeZone: CONFIG.fuseau_quota, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());

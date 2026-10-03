@@ -10,7 +10,7 @@ const { evaluerDossier } = require("../lib/regles.js");
 const { trier, modeAgent } = require("../lib/triage.js");
 
 const CHAMPS = ["id_police", "type_sinistre", "montant_reclame", "montant_plafond", "franchise",
-  "date_declaration", "date_souscription", "id_reparateur", "reparateur_count_90d", "ip_count_30d", "rapport_police"];
+  "date_declaration", "date_souscription", "id_reparateur", "reparateur_count_90d", "ip_count_30d", "circonstances", "rapport_police"];
 
 // Évalue un dossier envoyé comme le fait le serveur : validation, règles, triage, mode de l'agent
 function evaluerEnvoye(corps) {
@@ -74,6 +74,7 @@ test("après « Réinitialiser » : compteurs à 0, plus de scénario, l'agent n
   assert.equal(page.valeur("ip_count_30d"), "0");
   assert.equal(page.valeur("id_reparateur"), "");
   assert.equal(page.valeur("rapport_police"), "");
+  assert.equal(page.valeur("circonstances"), "");
   const corps = page.soumettre();
   assert.equal(corps.scenario, undefined);
   assert.deepEqual(evaluerEnvoye(corps), { score: 0, routage: "STP", mode: null, codes: [] });
@@ -87,4 +88,5 @@ test("valeurs par défaut du HTML : aucun compteur ne dépasse 0 (un visiteur ne
   assert.equal(v.ip_count_30d, "0");
   assert.equal(v.id_reparateur, "");
   assert.equal(v.rapport_police, "");
+  assert.equal(v.circonstances, "");
 });

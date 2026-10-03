@@ -78,5 +78,9 @@ test("rejeux : lisibles par le chargeur du serveur, un par scénario à agent ; 
     assert.ok(c.contenu.analyse.proposition);
   }
   assert.equal(chargerRejeu("inconnu").scenario, "recours");
-  assert.equal(PROMPT_VERSION, "2026-10-01", "le prompt a changé depuis l'enregistrement : ré-enregistrer les rejeux");
+});
+
+// Rejeux réenregistrés le 02/10/2026 sous le prompt 2026-10-02 (circonstances transmises à l'agent).
+test("rejeux : enregistrés avec la version courante du prompt", () => {
+  assert.equal(PROMPT_VERSION, "2026-10-02", "le prompt a changé depuis l'enregistrement : ré-enregistrer les rejeux");
 });

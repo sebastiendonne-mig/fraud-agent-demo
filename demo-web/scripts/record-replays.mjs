@@ -8,6 +8,10 @@
 //   client : jamais de blocs de réflexion ni de messages bruts) et les mesures
 //   HORS du dépôt.
 //
+// Jev n'est PAS utilisé : les rejeux sont des exécutions de l'agent sur le routage des
+// règles. Les dépendances passées aux handlers contiennent `jev: null` (voir
+// construireDeps) : aucun appel à Jev, aucun jeton OIDC nécessaire, aucun quota Jev.
+//
 // Sécurité : refuse de démarrer sans --yes et sans ANTHROPIC_API_KEY dans
 // l'environnement. Ne lit aucun fichier .env. N'affiche jamais la clé.
 //
@@ -114,6 +118,18 @@ function construireRejeu(date, analyse, finalisations) {
   };
 }
 
+// Dépendances des handlers. `jev: null` est écrit explicitement : le triage par Jev est
+// désactivé pour l'enregistrement (repli « jev_non_configure », sans réseau ni quota).
+export function construireDeps({ client, redis, config, now, uuid }) {
+  return {
+    now,
+    uuid,
+    store: () => creerStore({ redis, env: "development", config }),
+    client: () => client,
+    jev: null,
+  };
+}
+
 // ── Exécution (testable avec un faux client) ────────────────────────────────
 export async function executer({
   client, fumee = false, dossierReplays = DOSSIER_REPLAYS, fichierMesures = FICHIER_MESURES,
@@ -122,19 +138,14 @@ export async function executer({
   const redis = creerFauxRedis();
   const config = { ...CONFIG, quota_jour: 1_000_000 }; // quota neutralisé pour l'enregistrement
   let n = 0;
-  const deps = {
-    now,
-    uuid: () => `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}`,
-    store: () => creerStore({ redis, env: "development", config }),
-    client: () => client,
-  };
+  const deps = construireDeps({ client, redis, config, now, uuid: () => `00000000-0000-4000-8000-${String(++n).padStart(12, "0")}` });
   const analyse = H.creerHandlerAnalyse(deps);
   const finalise = H.creerHandlerFinalisation(deps);
   const liste = fumee ? [SCENARIO_FUMEE] : SCENARIOS_AGENT;
   const actions = fumee ? ["valider"] : ["valider", "rejeter"];
 
   const mesures = { enregistre_le: new Date(now()).toISOString(), modele: CONFIG.modele, prompt_version: PROMPT_VERSION,
-    effort: CONFIG.effort, tarif_usd_par_million: CONFIG.tarif_usd_par_million, fumee, executions: [], echecs: [], fichiers_ecrits: [], mentions_reelles: [] };
+    jev: "non utilisé", effort: CONFIG.effort, tarif_usd_par_million: CONFIG.tarif_usd_par_million, fumee, executions: [], echecs: [], fichiers_ecrits: [], mentions_reelles: [] };
 
   const mesurer = (scenario, appel, reponse, phase, debut, fin) => {
     const { usage, durees_tours_ms, nombre_tours } = usagePhase(reponse.trace, phase);
@@ -241,6 +252,7 @@ export function planExecution(fumee, fichierMesures = FICHIER_MESURES, dossierRe
       ? `  Mode fumée : scénario « ${SCENARIO_FUMEE} », appel 1 + Valider (2 exécutions). Aucun rejeu écrit.`
       : `  Scénarios : ${SCENARIOS_AGENT.join(", ")} — appel 1 + Valider + Rejeter chacun (9 exécutions).`,
     `  Stockage : en mémoire (aucun accès à Upstash).`,
+    `  Jev : non utilisé (les rejeux sont des exécutions de l'agent sur le routage des règles).`,
     `  Borne haute de coût : ${borne.toFixed(2)} $ (${couples} × ${borneParCouple().toFixed(2)} $, plafonds de tokens au prix le plus élevé).`,
     fumee ? "" : `  Rejeux écrits dans : ${dossierReplays}`,
     `  Mesures écrites dans : ${fumee ? fichierMesures.replace(/mesures\.json$/, "mesures-fumee.json") : fichierMesures}`,

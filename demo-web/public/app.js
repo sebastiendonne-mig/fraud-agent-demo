@@ -36,11 +36,27 @@ const MOTIFS_REPLI = {
   refus: "Le modèle a décliné la demande.",
   erreur_fournisseur: "Le service du modèle n'a pas répondu.",
 };
+const MOTIFS_JEV_REPLI = {
+  jev_non_configure: "Triage automatique non activé pour cette démo — le routage est calculé par les règles seules.",
+  jev_acces_refuse: "Accès au service de triage refusé — le routage est calculé par les règles seules.",
+  jev_budget_atteint: "Budget du service de triage épuisé — le routage est calculé par les règles seules.",
+  jev_quota_atteint: "Quota journalier du triage automatique atteint — le routage est calculé par les règles seules.",
+  jev_reseau: "Le service de triage est momentanément inaccessible — le routage est calculé par les règles seules.",
+  jev_reponse_invalide: "Le service de triage a renvoyé une réponse inattendue — le routage est calculé par les règles seules.",
+  jev_erreur: "Le triage automatique a rencontré une erreur — le routage est calculé par les règles seules.",
+};
+const LIBELLES_JEV = {
+  contradiction_interne: "Contradiction interne",
+  divergence_recit_rapport: "Divergence récit / rapport de police",
+  cause_evoquee: "Cause évoquée : acte volontaire",
+  pression_indemnisation: "Pression à l'indemnisation",
+};
+const COMPARAISON_JEV = "Coût mesuré le 02/10/2026 : 0,00003 à 0,000047 $ par lecture Jev (4 appels mesurés), contre 0,0205 $ par analyse complète par l'agent (3 analyses mesurées). Jev trie, l'agent enquête et rédige : ce ne sont pas les mêmes tâches.";
 const LIBELLES_CHAMPS = {
   id_police: "Numéro de police", type_sinistre: "Type de sinistre", montant_reclame: "Montant réclamé",
   montant_plafond: "Plafond de la police", franchise: "Franchise", date_declaration: "Date de déclaration",
   date_souscription: "Date de souscription", id_reparateur: "Réparateur", reparateur_count_90d: "Dossiers du même réparateur",
-  ip_count_30d: "Déclarations depuis la même IP", rapport_police: "Rapport de police", motif: "Motif",
+  ip_count_30d: "Déclarations depuis la même IP", circonstances: "Circonstances", rapport_police: "Rapport de police", motif: "Motif",
 };
 
 // ── Scénarios de démonstration : source unique dans scenarios.js ───────────
@@ -110,7 +126,7 @@ async function envoyer(url, methode, corps, delaiMs) {
 }
 
 // ── Formulaire ─────────────────────────────────────────────────────────────
-const CHAMPS_TEXTE = ["id_police", "type_sinistre", "date_declaration", "date_souscription", "id_reparateur", "rapport_police"];
+const CHAMPS_TEXTE = ["id_police", "type_sinistre", "date_declaration", "date_souscription", "id_reparateur", "circonstances", "rapport_police"];
 const CHAMPS_NOMBRE = ["montant_reclame", "montant_plafond", "franchise", "reparateur_count_90d", "ip_count_30d"];
 
 function remplirScenario(nom) {
@@ -185,11 +201,24 @@ function afficherScore(regles, routage, titre) {
   const pastille = $("routage");
   pastille.className = `routage ${info.classe}`;
   pastille.textContent = `${info.symbole} ${info.libelle}`;
-  $("sourceRoutage").textContent = "Routage calculé par les règles métier : l'agent ne peut pas le modifier.";
   const codes = $("reasonCodes");
   vider(codes);
   const lignes = regles.reason_codes && regles.reason_codes.length ? regles.reason_codes : ["Aucun signal déclenché."];
   for (const t of lignes) codes.append(el("li", { texte: t }));
+}
+
+function sourceRoutageTexte(d) {
+  const jev = d && d.jev;
+  const repli = d && d.repli_jev;
+  if (jev && jev.releve) {
+    const de = (ROUTAGES[d.routage_regles] || ROUTAGES.STP).libelle;
+    const vers = (ROUTAGES[d.routage] || ROUTAGES.STP).libelle;
+    return `Routage relevé d'un niveau par Jev : ${de} → ${vers}. L'agent ne peut pas le modifier.`;
+  }
+  if (jev) return "Routage calculé par les règles — Jev n'a relevé aucun niveau. L'agent ne peut pas le modifier.";
+  if (repli) return "Routage calculé par les règles (triage Jev indisponible). L'agent ne peut pas le modifier.";
+  if (d && d.motif === "quota_atteint") return "Routage calculé par les règles — sans triage Jev (quota d'analyses du jour atteint). L'agent ne peut pas le modifier.";
+  return "Routage calculé par les règles — aucun texte à analyser. L'agent ne peut pas le modifier.";
 }
 
 // ── Rendu : déroulé construit à partir de la trace réelle ──────────────────
@@ -326,15 +355,79 @@ function afficherBadge(classe, texte, bandeau) {
 }
 
 function bandeauRejeu(date) {
-  return `Rejeu d'une exécution réelle du ${date} — ce n'est pas l'analyse de votre saisie.`;
+  return `Rejeu d'une exécution réelle du ${date} — ce n'est pas l'analyse de votre saisie. Routage des règles seules, sans triage Jev : en direct, le routage peut différer.`;
 }
 
 function preparerResultat() {
-  for (const id of ["carteProposition", "carteDecision", "carteFinalisation", "carteJournal", "carteScore"]) montrer(id, false);
+  for (const id of ["carteProposition", "carteDecision", "carteFinalisation", "carteJournal", "carteScore", "carteJev"]) montrer(id, false);
   montrer("message", false);
   $("motif").value = "";
   majCompteurMotif();
   montrer("resultat", true);
+}
+
+// ── Rendu : carte Jev ─────────────────────────────────────────────────────
+function afficherCarteJev(d) {
+  const section = $("carteJev");
+  if (!section) return;
+  const jev = d && d.jev;
+  const repli = d && d.repli_jev;
+  if (!jev && !repli) { montrer("carteJev", false); return; }
+  vider(section);
+  section.append(el("h2", { texte: "Triage Jev" }));
+  if (repli) {
+    const msg = MOTIFS_JEV_REPLI[repli] || "Le triage automatique est temporairement indisponible — le routage est calculé par les règles seules.";
+    section.append(el("p", { classe: "repli-jev aide", texte: msg }));
+    montrer("carteJev", true);
+    return;
+  }
+  const ul = el("ul", { classe: "liste-jev" });
+  for (const [id, s] of Object.entries(jev.statuts || {})) {
+    const libelle = LIBELLES_JEV[id] || id;
+    const statutTexte = s.statut === "signal" ? "Signal" : s.statut === "neutre" ? "Neutre" : "Incertain — ignoré";
+    const li = el("li", { classe: "jev-question" });
+    li.append(el("span", { classe: "jev-libelle", texte: libelle }));
+    const statutP = el("span", { classe: "jev-statut-p" });
+    statutP.append(el("span", { classe: `jev-statut ${s.statut}`, texte: statutTexte }));
+    if (typeof s.p === "number") {
+      const pTxt = s.p.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      statutP.append(el("span", { classe: "jev-p aide", texte: `(p = ${pTxt})` }));
+    }
+    li.append(statutP);
+    ul.append(li);
+  }
+  section.append(ul);
+  const effetEl = el("p", { classe: "jev-effet" });
+  const signaux = jev.signaux || [];
+  const incertains = jev.incertains || [];
+  let texteEffet;
+  if (jev.releve) {
+    const de = (ROUTAGES[d.routage_regles] || ROUTAGES.STP).libelle;
+    const vers = (ROUTAGES[d.routage] || ROUTAGES.STP).libelle;
+    texteEffet = `Relevé d'un niveau : ${de} → ${vers}`;
+  } else if (signaux.length > 0) {
+    texteEffet = "Signal détecté, routage déjà au niveau maximum (Alerte SIU) — routage maintenu";
+  } else if (incertains.length > 0) {
+    texteEffet = "Aucun signal (avis incertains ignorés) — routage maintenu";
+  } else {
+    texteEffet = "Aucun signal — routage maintenu";
+  }
+  effetEl.append(el("strong", { texte: "Effet sur le routage : " }));
+  effetEl.append(document.createTextNode(texteEffet));
+  section.append(effetEl);
+  const lignePerf = [];
+  if (typeof jev.latence_ms === "number") lignePerf.push(`Latence : ${secondes(jev.latence_ms)}`);
+  if (jev.cout_usd !== null && jev.cout_usd !== undefined) {
+    lignePerf.push(`Coût : ${jev.cout_usd.toLocaleString("fr-FR", { minimumFractionDigits: 6, maximumFractionDigits: 6 })} $`);
+  } else {
+    lignePerf.push("Coût non communiqué");
+  }
+  if (jev.tokens_entree !== null && jev.tokens_entree !== undefined) {
+    lignePerf.push(`${jev.tokens_entree} tokens entrée / ${jev.tokens_sortie} sortie`);
+  }
+  section.append(el("p", { classe: "jev-perf aide", texte: lignePerf.join(" · ") }));
+  section.append(el("p", { classe: "jev-comparaison aide", texte: COMPARAISON_JEV }));
+  montrer("carteJev", true);
 }
 
 // ── Rendu des réponses d'analyse ───────────────────────────────────────────
@@ -344,26 +437,37 @@ function rendreAnalyse(d) {
   etat.regles = d.regles || null;
 
   if (d.mode === "regles_seules") {
-    afficherBadge("regles", "Règles seules — aucun appel IA");
+    const badgeTexte = d.jev ? "Règles + Jev — sans agent" : d.repli_jev ? "Règles seules — Jev indisponible" : "Règles seules — aucun appel IA";
+    afficherBadge("regles", badgeTexte);
     afficherScore(d.regles, d.routage, "Score des règles");
+    $("sourceRoutage").textContent = sourceRoutageTexte(d);
     montrer("carteScore", true);
+    afficherCarteJev(d);
     afficherStepper(etapesDepuisTrace(d.regles, d.routage, null, [
       { titre: "Agent", detail: "non appelé : traitement automatique sans rapport de police", statut: "fait" },
     ]));
-    afficherMessage(d.message || "Dossier en traitement automatique : aucun appel à l'IA.");
+    const msgStp = d.repli_jev
+      ? "Dossier en traitement automatique (STP), sans rapport de police : l'agent n'est pas appelé (triage Jev indisponible)."
+      : d.jev
+        ? "Dossier en traitement automatique (STP), sans rapport de police : l'agent n'est pas appelé."
+        : "Dossier en traitement automatique : aucun appel à l'IA.";
+    afficherMessage(d.message || msgStp);
     return;
   }
 
   if (d.mode === "direct") {
     const tours = (d.trace && d.trace.tours) || [];
     const u = (d.trace && d.trace.usage_total) || {};
-    afficherBadge("reel", `Exécution réelle · ${d.modele} · ${tours.length} tour${tours.length > 1 ? "s" : ""} · ${nombre((u.entree || 0) + (u.sortie || 0))} tokens`);
+    const jevLabel = d.jev ? " · Jev" : "";
+    afficherBadge("reel", `Exécution réelle · ${d.modele} · ${tours.length} tour${tours.length > 1 ? "s" : ""} · ${nombre((u.entree || 0) + (u.sortie || 0))} tokens${jevLabel}`);
     if (d.quota) afficherQuota(d.quota.restantes);
     etat.runId = d.run_id;
     etat.proposition = d.proposition;
     etat.trace = d.trace;
     afficherScore(d.regles, d.routage, "Score des règles");
+    $("sourceRoutage").textContent = sourceRoutageTexte(d);
     montrer("carteScore", true);
+    afficherCarteJev(d);
     afficherStepper(etapesDepuisTrace(d.regles, d.routage, d.trace, [
       { titre: "Proposition", detail: "décision typée de l'agent", statut: "fait" },
       { titre: "Décision humaine", detail: "à vous de valider ou de rejeter", statut: "en_cours" },
@@ -380,8 +484,10 @@ function rendreAnalyse(d) {
   const motif = MOTIFS_REPLI[d.motif] || "";
   if (d.regles && d.routage) {
     afficherScore(d.regles, d.routage, "Votre dossier : score des règles");
+    $("sourceRoutage").textContent = sourceRoutageTexte(d);
     montrer("carteScore", true);
   }
+  afficherCarteJev(d);
   if (d.mode === "rejeu" && d.rejeu) {
     etat.rejeuScenario = d.rejeu.scenario;
     afficherBadge("rejeu", "Rejeu", [motif, d.bandeau].filter(Boolean).join(" "));

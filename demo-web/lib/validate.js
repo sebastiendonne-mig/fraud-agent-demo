@@ -5,6 +5,7 @@ const TYPES_SINISTRE = Object.freeze([
 ]);
 const SCENARIOS = Object.freeze(["stp", "reseau", "precoce", "recours"]);
 const RAPPORT_MAX = 4000;
+const CIRCONSTANCES_MAX = 2000; // récit déclaré par l'assuré : un récit court suffit, et un state trop gros dégrade le triage
 const MOTIF_MAX = 500;
 const IDENTIFIANT = /^[A-Za-z0-9_-]{1,40}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -38,6 +39,10 @@ const CHAMPS_DOSSIER = {
   rapport_police: {
     requis: false, defaut: "",
     verifier: (v) => (typeof v === "string" && v.length <= RAPPORT_MAX ? null : `texte de ${RAPPORT_MAX} caractères maximum`),
+  },
+  circonstances: {
+    requis: false, defaut: "",
+    verifier: (v) => (typeof v === "string" && v.length <= CIRCONSTANCES_MAX ? null : `texte de ${CIRCONSTANCES_MAX} caractères maximum`),
   },
   scenario: { requis: false, defaut: null, verifier: (v) => (v === null || SCENARIOS.includes(v) ? null : "scénario inconnu") },
 };
@@ -92,4 +97,4 @@ function validerFinalisation(corps) {
   return r;
 }
 
-module.exports = { validerDossier, validerFinalisation, TYPES_SINISTRE, SCENARIOS, RAPPORT_MAX, MOTIF_MAX };
+module.exports = { validerDossier, validerFinalisation, TYPES_SINISTRE, SCENARIOS, RAPPORT_MAX, CIRCONSTANCES_MAX, MOTIF_MAX };

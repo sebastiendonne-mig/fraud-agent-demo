@@ -132,6 +132,44 @@ test("quota atteint : rejeu signalé, sans appel au modèle ; sans rejeu → ind
   assert.equal(r2.message, H.MESSAGE_INDISPONIBLE);
 });
 
+test("quota atteint avant Jev : Jev non appelé, jev null dans la réponse, mode rejeu", async () => {
+  let jevAppels = 0;
+  const horloge = F.creerHorloge(Date.UTC(2026, 8, 30, 10, 0, 0));
+  const redis = creerFauxRedis({ horloge });
+  for (let i = 0; i < CONFIG.quota_jour.production; i++) await redis.incr("production:quota:2026-09-30");
+  H._definirChargeurRejeu((s) => ({ scenario: s || "reseau", contenu: rejeuFactice }));
+  const deps = {
+    now: horloge.now,
+    uuid: () => "test-uuid",
+    store: () => creerStore({ redis, env: "production" }),
+    client: () => null,
+    jev: { disponible: () => true, evaluer: async () => { jevAppels++; return []; } },
+  };
+  const r = (await appeler(H.creerHandlerAnalyse(deps), dossier("reseau"))).json();
+  assert.equal(r.mode, "rejeu");
+  assert.equal(r.motif, "quota_atteint");
+  assert.equal(r.jev, null, "Jev ne doit pas figurer dans la réponse");
+  assert.equal(jevAppels, 0, "Jev ne doit pas être appelé quand le quota est épuisé");
+});
+
+test("quota non épuisé : pré-vérification sans faux positif, analyse directe possible", async () => {
+  const m = monter({ script: scriptRecours() });
+  await m.redis.incr("production:quota:2026-09-30"); // 1 analyse déjà faite, quota non épuisé
+  const r = (await appeler(m.analyse, dossier("recours"))).json();
+  assert.equal(r.mode, "direct");
+  assert.notEqual(r.motif, "quota_atteint");
+});
+
+test("STP : la pré-vérification quota est ignorée, le store n'est pas consulté", async () => {
+  const m = monter();
+  for (let i = 0; i < CONFIG.quota_jour.production; i++) await m.redis.incr("production:quota:2026-09-30");
+  H._definirChargeurRejeu((s) => ({ scenario: s || "stp", contenu: rejeuFactice }));
+  const r = (await appeler(m.analyse, dossier("stp"))).json();
+  assert.equal(r.mode, "regles_seules", "STP reste regles_seules même avec quota épuisé");
+  assert.equal(r.routage, "STP");
+  assert.equal(m.compteurs.store, 0, "le store ne doit pas être consulté pour un STP");
+});
+
 test("stockage en panne ou absent : repli, sans appel au modèle", async () => {
   H._definirChargeurRejeu(() => null); // indépendant des rejeux présents dans replays/
   const m = monter({ script: scriptRecours() });
@@ -183,7 +221,7 @@ test("quota : lecture seule, mise en cache CDN 60 s, aucune clé créée", async
   const m = monter();
   const res = await appeler(m.quota, undefined, "GET");
   assert.equal(res.statusCode, 200);
-  assert.deepEqual(res.json(), { restantes: CONFIG.quota_jour.production, limite: CONFIG.quota_jour.production });
+  assert.deepEqual(res.json(), { restantes: CONFIG.quota_jour.production, limite: CONFIG.quota_jour.production, jev: { restantes: 30, limite: 30 } });
   assert.equal(res.headers["cache-control"], "public, max-age=0, s-maxage=60");
   assert.deepEqual(m.redis.cles(), []);
   assert.equal((await appeler(m.quota, {}, "POST")).statusCode, 405);
@@ -314,9 +352,9 @@ test("les points d'entrée api/ se chargent sans réseau ni variables d'environn
 
 test("point d'accès du quota : la limite affichée est celle de l'environnement (preview : 3)", async () => {
   const m = monter({ env: "preview" });
-  assert.deepEqual((await appeler(m.quota, undefined, "GET")).json(), { restantes: 3, limite: 3 });
+  assert.deepEqual((await appeler(m.quota, undefined, "GET")).json(), { restantes: 3, limite: 3, jev: { restantes: 6, limite: 6 } });
   const prod = monter({ env: "production" });
-  assert.deepEqual((await appeler(prod.quota, undefined, "GET")).json(), { restantes: 15, limite: 15 });
+  assert.deepEqual((await appeler(prod.quota, undefined, "GET")).json(), { restantes: 15, limite: 15, jev: { restantes: 30, limite: 30 } });
 });
 
 test("config : le calcul du quota est documenté et daté (01/10/2026, pire cas 0,031 $, plafond 18 $)", () => {
@@ -324,4 +362,19 @@ test("config : le calcul du quota est documenté et daté (01/10/2026, pire cas 
   for (const attendu of ["01/10/2026", "0,031 $", "18 $", "13,95 $", "2,79 $", "16,74 $", "1,26 $"]) assert.ok(doc.includes(attendu), attendu);
   const total = (CONFIG.quota_jour.production + CONFIG.quota_jour.preview) * 30 * 0.031;
   assert.ok(total <= 18 && Math.abs(total - 16.74) < 1e-9, "production + preview restent sous le plafond");
+});
+
+test("quota : le compteur Jev est lu en lecture seule ; s'il est illisible, le quota des analyses reste servi", async () => {
+  const m = monter();
+  await m.redis.incr("production:quota_jev:2026-09-30");
+  const res = await appeler(m.quota, undefined, "GET");
+  assert.equal(res.json().jev.restantes, 29);
+  assert.deepEqual(m.redis.cles(), ["production:quota_jev:2026-09-30"], "aucune clé créée par la lecture");
+  const sansJev = H.creerHandlerQuota({
+    now: () => 0,
+    store: () => ({ lireQuota: async () => ({ restantes: 5, limite: 15 }), lireQuotaJev: async () => { throw new Error("HS"); } }),
+  });
+  const r2 = await appeler(sansJev, undefined, "GET");
+  assert.equal(r2.statusCode, 200);
+  assert.deepEqual(r2.json(), { restantes: 5, limite: 15 });
 });

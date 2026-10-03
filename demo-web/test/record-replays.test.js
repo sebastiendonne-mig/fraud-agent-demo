@@ -177,3 +177,43 @@ test("code source : aucune lecture de .env, aucun affichage de l'environnement",
   assert.doesNotMatch(code, /console\.(log|error|warn)\([^)]*process\.env/);
   assert.equal((code.match(/process\.env\.ANTHROPIC_API_KEY/g) || []).length, 2, "lue uniquement pour le test de présence et la construction du client");
 });
+
+// ── Jev : jamais utilisé pour les rejeux (option A du sous-lot 2.2b) ──────────
+test("construireDeps : la clé jev est présente et vaut null (écrite explicitement)", async () => {
+  const { construireDeps } = await charger();
+  const { creerFauxRedis } = require("./helpers/faux-redis.js");
+  const deps = construireDeps({ client: fauxClient(), redis: creerFauxRedis(), config: require("../config/agent.json"), now: () => 0, uuid: () => "u" });
+  assert.equal(Object.hasOwn(deps, "jev"), true);
+  assert.equal(deps.jev, null);
+});
+
+test("executer : les handlers reçoivent jev: null, rien ne sort sur le réseau, les mesures le consignent", async () => {
+  const { executer } = await charger();
+  const capturees = [];
+  const original = H.creerHandlerAnalyse;
+  H.creerHandlerAnalyse = (deps) => { capturees.push(deps); return original(deps); };
+  try {
+    const m = await executer({ client: fauxClient(), dossierReplays: dossierTemp(), fichierMesures: path.join(dossierTemp(), "mesures.json"), journal: silencieux });
+    assert.equal(capturees.length, 1);
+    assert.equal(Object.hasOwn(capturees[0], "jev"), true);
+    assert.equal(capturees[0].jev, null);
+    assert.equal(m.jev, "non utilisé");
+    assert.equal(m.echecs.length, 0);
+  } finally {
+    H.creerHandlerAnalyse = original;
+  }
+  assert.throws(() => globalThis.fetch("https://ai-gateway.vercel.sh"), /Accès réseau interdit/, "le filet réseau est actif");
+});
+
+test("le script n'importe ni lib/jev.js, ni jeton OIDC, ni clé Gateway", () => {
+  const source = fs.readFileSync(SCRIPT, "utf8");
+  assert.equal(/require\("\.\.\/lib\/jev\.js"\)/.test(source), false);
+  assert.equal(source.includes("VERCEL_OIDC_TOKEN"), false);
+  assert.equal(source.includes("AI_GATEWAY_API_KEY"), false);
+  assert.match(source, /jev: null/);
+});
+
+test("CLI : le plan affiché indique que Jev n'est pas utilisé", () => {
+  const r = lancer([], { PATH: process.env.PATH, HOME: dossierTemp() });
+  assert.match(r.stdout, /Jev : non utilisé/);
+});
