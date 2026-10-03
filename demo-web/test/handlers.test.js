@@ -132,6 +132,44 @@ test("quota atteint : rejeu signalé, sans appel au modèle ; sans rejeu → ind
   assert.equal(r2.message, H.MESSAGE_INDISPONIBLE);
 });
 
+test("quota atteint avant Jev : Jev non appelé, jev null dans la réponse, mode rejeu", async () => {
+  let jevAppels = 0;
+  const horloge = F.creerHorloge(Date.UTC(2026, 8, 30, 10, 0, 0));
+  const redis = creerFauxRedis({ horloge });
+  for (let i = 0; i < CONFIG.quota_jour.production; i++) await redis.incr("production:quota:2026-09-30");
+  H._definirChargeurRejeu((s) => ({ scenario: s || "reseau", contenu: rejeuFactice }));
+  const deps = {
+    now: horloge.now,
+    uuid: () => "test-uuid",
+    store: () => creerStore({ redis, env: "production" }),
+    client: () => null,
+    jev: { disponible: () => true, evaluer: async () => { jevAppels++; return []; } },
+  };
+  const r = (await appeler(H.creerHandlerAnalyse(deps), dossier("reseau"))).json();
+  assert.equal(r.mode, "rejeu");
+  assert.equal(r.motif, "quota_atteint");
+  assert.equal(r.jev, null, "Jev ne doit pas figurer dans la réponse");
+  assert.equal(jevAppels, 0, "Jev ne doit pas être appelé quand le quota est épuisé");
+});
+
+test("quota non épuisé : pré-vérification sans faux positif, analyse directe possible", async () => {
+  const m = monter({ script: scriptRecours() });
+  await m.redis.incr("production:quota:2026-09-30"); // 1 analyse déjà faite, quota non épuisé
+  const r = (await appeler(m.analyse, dossier("recours"))).json();
+  assert.equal(r.mode, "direct");
+  assert.notEqual(r.motif, "quota_atteint");
+});
+
+test("STP : la pré-vérification quota est ignorée, le store n'est pas consulté", async () => {
+  const m = monter();
+  for (let i = 0; i < CONFIG.quota_jour.production; i++) await m.redis.incr("production:quota:2026-09-30");
+  H._definirChargeurRejeu((s) => ({ scenario: s || "stp", contenu: rejeuFactice }));
+  const r = (await appeler(m.analyse, dossier("stp"))).json();
+  assert.equal(r.mode, "regles_seules", "STP reste regles_seules même avec quota épuisé");
+  assert.equal(r.routage, "STP");
+  assert.equal(m.compteurs.store, 0, "le store ne doit pas être consulté pour un STP");
+});
+
 test("stockage en panne ou absent : repli, sans appel au modèle", async () => {
   H._definirChargeurRejeu(() => null); // indépendant des rejeux présents dans replays/
   const m = monter({ script: scriptRecours() });

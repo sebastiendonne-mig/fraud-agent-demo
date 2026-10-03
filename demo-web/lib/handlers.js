@@ -62,6 +62,21 @@ async function trierSansErreur(regles, dossier, req, deps, ms) {
   }
 }
 
+// Construit l'objet commun transmis au client. Accepte la forme triage complète
+// (trierSansErreur : routage_regles, jev, repli_jev, quota_jev) et la forme
+// baseRoutage seule (trier : routage + source uniquement, sans Jev).
+function communDossier(reglesResultat, triage) {
+  return {
+    regles: { score: reglesResultat.score, reason_codes: reglesResultat.reason_codes, detail: reglesResultat.detail },
+    routage: triage.routage,
+    routage_regles: triage.routage_regles ?? triage.routage,
+    source_routage: triage.source,
+    jev: triage.jev ?? null,
+    repli_jev: triage.repli_jev ?? null,
+    quota_jev: triage.quota_jev ?? null,
+  };
+}
+
 // ── Appel 1 : analyse ────────────────────────────────────────────────────
 function creerHandlerAnalyse(deps) {
   const config = deps.config || CONFIG_AGENT;
@@ -82,15 +97,29 @@ function creerHandlerAnalyse(deps) {
       scenario = dossier.scenario;
       // Règles : déterministes, toujours calculées et renvoyées
       const regles = evaluerDossier(dossier);
-      // Triage : les règles fixent le plancher ; Jev (si des textes existent) ne peut que le relever d'un niveau.
+      const baseRoutage = trier(regles);
+      const modeAnticipe = modeAgent(baseRoutage.routage, dossier.rapport_police);
+      // Pré-vérification quota (lecture seule) : si épuisé, rejeu immédiat avant tout appel Jev.
+      // STP de base : pré-vérification ignorée — retour précoce de toute façon.
+      // TODO lot 3 : si Jev relève un STP en INVESTIGATION et que le quota est épuisé,
+      //   Jev sera appelé inutilement ; le rejeu se déclenchera au contrôle old-style ci-dessous.
+      if (modeAnticipe !== null) {
+        try {
+          const storeQ = deps.store();
+          if (storeQ) {
+            const lu = await storeQ.lireQuota(debut);
+            if (lu.restantes <= 0) {
+              commun = communDossier(regles, baseRoutage);
+              return repli("quota_atteint");
+            }
+          }
+        } catch { /* pré-vérification impossible : le contrôle old-style prendra le relais */ }
+      }
+      // Triage avec Jev (appel réseau éventuel)
       const triage = await trierSansErreur(regles, dossier, req, deps, debut);
       const { routage } = triage;
       const mode = modeAgent(routage, dossier.rapport_police);
-      commun = {
-        regles: { score: regles.score, reason_codes: regles.reason_codes, detail: regles.detail },
-        routage, routage_regles: triage.routage_regles, source_routage: triage.source,
-        jev: triage.jev, repli_jev: triage.repli_jev, quota_jev: triage.quota_jev,
-      };
+      commun = communDossier(regles, triage);
 
       if (!mode) {
         return repondre(res, 200, {
