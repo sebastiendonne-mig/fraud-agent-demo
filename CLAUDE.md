@@ -75,7 +75,7 @@ dossier ──▶ validation stricte ──▶ règles (score /50) ──▶ rou
 - Commentaires du code en **français**, noms de variables et fonctions : snake_case anglais en Python ; le code JavaScript du dépôt suit le français (voir l'existant).
 - Aucune clé dans le code ni dans git : variables d'environnement uniquement (hook gitleaks au commit). `demo-web/.env` local est ignoré par git.
 - Versions des dépendances figées (sans `^`).
-- Une branche et une PR par lot, **fusionnée par Sébastien** ; Claude ne fusionne ni ne déploie jamais en production. Les commits restent locaux tant que Sébastien n'a pas relu.
+- Une branche et une PR par lot, **fusionnée par Sébastien** ; Claude Code ne fusionne une PR que sur demande explicite de Sébastien dans son dernier message, et ne déploie jamais lui-même.
 - Aucun appel payant lancé par Claude : les enregistrements de rejeux sont lancés par Sébastien.
 - On travaille avec Claude Code dans le terminal.
 
@@ -90,7 +90,7 @@ dossier ──▶ validation stricte ──▶ règles (score /50) ──▶ rou
 
 - Aucune affirmation non vérifiée dans la démo ou la documentation (chiffres, KPI, promesses de confidentialité).
 - Pas de « zéro stockage » ni de « jamais envoyée ailleurs » : les saisies sont traitées par Anthropic (conservation jusqu'à 30 jours, sauf exceptions) ; si un récit ou rapport est saisi, ces textes sont transmis à Jev (TypeSafe AI, via Vercel AI Gateway) — durée de conservation non fixée par TypeSafe AI (aussi longtemps que raisonnablement nécessaire à ses services ou à ses activités). Jamais : « zéro stockage », ZDR (indisponible en Hobby), « données en Europe ». L'état de session est gardé 30 min dans Upstash. Hébergement aux États-Unis.
-- Pas de fusion ni de déploiement en production par Claude.
+- Claude Code ne fusionne une PR que sur demande explicite de Sébastien dans son dernier message, et ne déploie jamais lui-même.
 
 ## Suite prévue
 
