@@ -24,7 +24,7 @@ test("ai/test : Experimental_EvaluationMockModelV4 exposé", async () => {
 test("version d'ai figée, 7.x au moins 7.0.105", () => {
   const { version } = require("ai/package.json");
   const [maj, min, patch] = version.split(".").map(Number);
-  assert.equal(maj, 7);
+  assert.equal(maj, 8);
   assert.ok(min > 0 || patch >= 105, `version ${version}`);
 });
 
