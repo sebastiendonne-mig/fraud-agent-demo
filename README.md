@@ -1,3 +1,5 @@
+[![CI](https://github.com/sebastiendonne-mig/fraud-agent-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/sebastiendonne-mig/fraud-agent-demo/actions/workflows/ci.yml)
+
 # Agent IA — Détection de fraude & recours (IARD)
 
 Démonstrateur d'un agent IA de triage de sinistres pour assureurs IARD : des **règles déterministes** décident du routage, un **agent Claude à outils sans effet réel** n'intervient que si c'est utile, et **un humain valide** avant toute finalisation.
